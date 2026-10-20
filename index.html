@@ -34,7 +34,10 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-acti
 /* HUD */
 #hud{position:absolute;top:0;left:0;right:0;display:flex;flex-direction:column;gap:8px;
   padding-top:10px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));pointer-events:none}
-.hudrow{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.hudrow{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:12px}
+#hearts{justify-self:start;grid-column:1}
+#timer{grid-column:2}
+.hudrow .right{justify-self:end;grid-column:3}
 #hearts{display:flex;gap:4px}
 #hearts svg{width:24px;height:24px}
 #timer{font-family:var(--display);font-size:30px;line-height:1;min-width:2ch;text-align:center;font-variant-numeric:tabular-nums;text-shadow:0 2px 0 #000}
@@ -168,6 +171,16 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-acti
 .talents i{height:10px;border-radius:5px;background:rgba(122,78,42,.2);overflow:hidden;display:block}
 .talents i b{display:block;height:100%;background:#a64dff;border-radius:5px}
 .talents span{font-family:var(--display);font-size:20px;color:#c0281e;text-align:right}
+/* Practice mode */
+#menuBtn{position:absolute;top:10px;left:max(16px,env(safe-area-inset-left,0px));z-index:5;font:700 15px var(--body);color:var(--ink);
+  background:rgba(23,15,46,.85);border:1.5px solid rgba(246,239,255,.35);border-radius:999px;padding:7px 14px;cursor:pointer;touch-action:manipulation}
+#menuBtn:focus-visible{outline:3px solid var(--yellow);outline-offset:2px}
+.practicing #hearts{visibility:hidden}
+.practicing .phead{padding-left:92px;align-items:center}
+.practicing .phead h2{font-size:20px;white-space:nowrap}
+.practicing #pInfo,.practicing #mInfo,.practicing #bInfo{font-size:12px}
+#practiceList{display:flex;flex-direction:column;gap:10px;width:100%;max-width:300px}
+.pgame{width:100%}
 /* Flight ZAP button: the ring around it is the magic gauge */
 #fireBtn{position:absolute;bottom:18px;left:max(16px,env(safe-area-inset-left,0px));width:88px;height:88px;border-radius:50%;border:0;padding:7px;cursor:pointer;
   touch-action:none;background:conic-gradient(var(--yellow) calc(var(--mana,1)*360deg),rgba(246,239,255,.16) 0);box-shadow:0 5px 0 rgba(0,0,0,.45)}
@@ -268,6 +281,17 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-acti
     </div>
   </div>
 
+  <button id="menuBtn" type="button" hidden>← Menu</button>
+
+  <div class="overlay" id="practiceScreen" hidden>
+    <div class="card">
+      <h2 class="title">Practice</h2>
+      <p class="sub">Pick a game. It starts easy and keeps getting harder the longer you play.</p>
+      <div id="practiceList"></div>
+      <button class="btn ghost" id="practiceBack" type="button">Back</button>
+    </div>
+  </div>
+
   <div class="overlay" id="titleScreen">
     <div class="card">
       <h1 class="title">Witchity Witch Witch <span>Which Way Do I Go?</span></h1>
@@ -277,7 +301,8 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-acti
         <div><b style="color:var(--yellow)">Y</b><small>yellow</small></div>
         <div><b style="color:var(--green)">G</b><small>green</small></div>
       </div>
-      <button class="btn" id="startBtn" type="button">Start casting</button>
+      <div class="btns"><button class="btn" id="startBtn" type="button">Go to Witch School</button>
+        <button class="btn ghost" id="practiceBtn" type="button">Practice</button></div>
       <p class="sub" id="progressLine"></p>
       <button class="btn ghost" id="resetBtn" type="button" hidden>Start over from level 1</button>
     </div>
@@ -507,7 +532,7 @@ function roundCfg(i){
 /* ---------- saved progress (this browser only) ---------- */
 const SAVE_KEY='witchity-progress';
 function loadProgress(){try{const d=JSON.parse(localStorage.getItem(SAVE_KEY)||'{}');G.wandLvl=d.wand|0;G.potionLvl=d.potion|0;G.flightLvl=d.flight|0;G.mushLvl=d.mush|0;G.stash=d.stash|0;if(d.school)G.school={term:d.school.term||1,history:d.school.history||{}};if(d.term)G.termRec=d.term;if(d.book)G.book={pieces:d.book.pieces|0,fixed:d.book.fixed|0,lv:{...G.book.lv,...(d.book.lv||{})}};G.team=d.team||[];G.flock=d.flock||[];}catch(e){}}
-function saveProgress(){try{localStorage.setItem(SAVE_KEY,JSON.stringify({wand:G.wandLvl,potion:G.potionLvl,flight:G.flightLvl,mush:G.mushLvl,book:G.book,school:G.school,term:G.termRec,stash:G.stash||0,team:G.team,flock:G.flock}));}catch(e){}}
+function saveProgress(){if(G.practice)return;try{localStorage.setItem(SAVE_KEY,JSON.stringify({wand:G.wandLvl,potion:G.potionLvl,flight:G.flightLvl,mush:G.mushLvl,book:G.book,school:G.school,term:G.termRec,stash:G.stash||0,team:G.team,flock:G.flock}));}catch(e){}}
 function starsToMove(stars){return stars===3?1:stars===1?-1:0;}
 function levelMsg(stars,newLvl,what){
   return stars===3?`Level up! ${what} level ${newLvl+1} next time.`:stars===2?`Nice! Let's try ${what} level ${newLvl+1} again.`:`Let's practice ${what} level ${newLvl+1} next time.`;
@@ -881,7 +906,7 @@ function showIntro(){clearFx();
 function startRound(){
   const cfg=roundCfg(G.wandLvl);
   Object.assign(G,{state:'play',time:CONFIG.roundTime,spawnT:0.6,hearts:CONFIG.hearts,zaps:0,bonks:0,monsters:[],bolts:[],strokes:[],curStroke:null,strokeTimer:-1,fadeTrail:null,lastSpawnLetters:[]});
-  $('introScreen').hidden=true;$('hud').hidden=false;$('roundTag').textContent=`Wand level ${G.wandLvl+1}`;
+  $('introScreen').hidden=true;$('hud').hidden=false;$('roundTag').textContent=`${G.practice?'Practice · ':''}Wand level ${G.wandLvl+1}`;
   const bk=cfg.book===true?cfg.colors:(cfg.book||'');buildBook(bk||'R');$('book').classList.toggle('hidden',!bk);
   G.rainbowLeft=SPELLBOOK.rainbowUses(spellLv('rainbow'));$('spellBar').hidden=false;$('spellBar').dataset.html='';
   $('pad').hidden=!cfg.math;G.padH=cfg.math?$('pad').offsetHeight:0;$('hearts').hidden=true;updateHud();
@@ -979,7 +1004,7 @@ function nextCustomer(){
   const f=pool[rint(0,pool.length-1)]; PZ.usedFolks.push(f[0]);
   PZ.cur={name:f[0],ailment:f[1],look:randomLook(),recipe:makeRecipe(potionLevelCfg(),shopPalette()),mode:'sick',enter:0,flip:0};
   PZ.added=[];PZ.phase='mix';PZ.t=0;PZ.flights=[];
-  $('pInfo').textContent=`Potion level ${G.potionLvl+1} · Customer ${PZ.idx+1} of ${POTION.customers}`;
+  $('pInfo').textContent=G.practice?`Practice · Potion level ${G.potionLvl+1} · ${PZ.healed} healed`:`Potion level ${G.potionLvl+1} · Customer ${PZ.idx+1} of ${POTION.customers}`;
   $('bubble').textContent=`${PZ.cur.name} ${PZ.cur.ailment}! Can you mix a potion?`;
   $('recipe').innerHTML=`<small>Recipe</small>`+PZ.cur.recipe.map(l=>`<div class="fline" style="color:${CONFIG.colors[l.c].fill}">${l.text}</div>`).join('');
   $('shelf').innerHTML='';
@@ -1009,7 +1034,7 @@ function addDrop(c,btn){
 function emptyPot(){if(PZ.phase!=='mix'||!PZ.added.length)return;PZ.added=[];renderTally();Sfx.glug();
   const p=potCenter();burst(p.x,p.y,'rgba(140,160,150,',14,40);}
 function brew(){
-  if(PZ.phase==='result'){PZ.idx++; if(PZ.idx<POTION.customers)nextCustomer(); else closeShop(); return;}
+  if(PZ.phase==='result'){PZ.idx++; if(G.practice||PZ.idx<POTION.customers)nextCustomer(); else closeShop(); return;}
   if(PZ.phase!=='mix')return;
   if(!PZ.added.length){$('bubble').textContent='The pot is empty! Tap the bottles to add drops.';return;}
   PZ.phase='brewing';PZ.t=0;$('brewBtn').disabled=true;$('emptyBtn').hidden=true;Sfx.brew();
@@ -1025,7 +1050,9 @@ function finishBrew(){
     $('bubble').textContent=`Hooray! ${c.name} feels better and joins your team!`;}
   else{c.mode='chicken';PZ.chickens++;G.flock.push(c.name);Sfx.bawk();burst(cx,cy,'rgba(255,255,255,',34,90);
     $('bubble').textContent=`BAWK! ${c.name} turned into a chicken! (It needed ${c.recipe.map(l=>`${l.ans} ${CONFIG.colors[l.c].name}`).join(', ')}.)`;}
-  $('brewBtn').disabled=false;$('brewBtn').textContent=PZ.idx<POTION.customers-1?'Next customer':'Close the shop';
+  if(G.practice){G.pStreak=ok?G.pStreak+1:0;
+    if(G.pStreak>=PRACTICE.potionStreak){G.pStreak=0;G.potionLvl++;$('bubble').textContent+=` Level up! Potion level ${G.potionLvl+1}.`;Sfx.roundEnd();}}
+  $('brewBtn').disabled=false;$('brewBtn').textContent=(G.practice||PZ.idx<POTION.customers-1)?'Next customer':'Close the shop';
 }
 function closeShop(){
   G.state='shopEnd';$('potion').hidden=true;$('shopEnd').hidden=false;
@@ -1256,11 +1283,12 @@ function flightHit(){
   if(FL.invuln>0)return;
   FL.hearts--;FL.hits++;FL.invuln=1.3;FL.power=Math.max(0,FL.power-1);G.hearts=FL.hearts;setHearts();
   G.shake=reduceMotion?0.2:1;Sfx.bonk();floatText('BUMP!',W/2,H*0.55,'#ff4a3d',true);
+  if(G.practice){FL.hearts=Math.max(FL.hearts,1);return;}   // practice: bumps cost magic, never end the flight
   if(FL.hearts<=0)endFlight(true);
 }
 function updateFlight(dt){
   const cfg=flightCfg(G.flightLvl),Z=FLIGHT.zFar;
-  FL.t-=dt;if(FL.t<=0){FL.t=0;updateFlightHud();endFlight(false);return;}
+  FL.t-=dt;if(FL.t<=0){if(G.practice)flightPracticeNext();else{FL.t=0;updateFlightHud();endFlight(false);return;}}
   FL.invuln=Math.max(0,FL.invuln-dt);
   // steering
   const kx=Math.min(1,dt*(spellLv('broom')?10:7));FL.bank+=((FL.tx-FL.px)-FL.bank)*Math.min(1,dt*6);
@@ -1316,7 +1344,7 @@ function updateFireBtn(){const b=$('fireBtn');if(b.hidden)return;
   $('fireLbl').textContent=FL.overheat?'…':'ZAP';}
 function updateFlightHud(){
   $('timer').textContent=Math.ceil(Math.max(0,FL.t));$('timer').classList.toggle('low',FL.t<=5);
-  $('score').textContent=`${FL.score} pts`;$('roundTag').textContent=`Flight level ${G.flightLvl+1} · ${biomeNow().name}${spellLv('broom')?' · Swift Broom':''}`;
+  $('score').textContent=`${FL.score} pts`;$('roundTag').textContent=`${G.practice?'Practice · ':''}Flight level ${G.flightLvl+1} · ${biomeNow().name}${spellLv('broom')?' · Swift Broom':''}`;
 }
 function endFlight(crashed){
   const cfg=flightCfg(G.flightLvl);
@@ -1537,7 +1565,7 @@ function showMushIntro(){clearFx();
 }
 function startMush(){clearFx();
   Object.assign(MZ,{lanternLeft:SPELLBOOK.lanternUses(spellLv('lantern')),good:0,misses:0,lock:false,t:MUSH.roundTime,stage:Math.min(G.mushLvl,MUSH.stages.length-1),streak:0});
-  G.state='mush';$('introScreen').hidden=true;$('mush').hidden=false;$('mBasket').innerHTML='';$('mTimer').hidden=false;
+  G.state='mush';$('introScreen').hidden=true;$('mush').hidden=false;$('mBasket').innerHTML='';$('mTimer').hidden=!!G.practice;
   nextPick();updateLanternBtn();Sfx.startMusic();
 }
 function nextPick(){
@@ -1561,12 +1589,13 @@ function pickCell(i,b){
     b.classList.remove('wrong');void b.offsetWidth;b.classList.add('wrong');updateMushInfo();}
 }
 function updateMush(dt){
+  if(G.practice){updateMushInfo();return;}
   MZ.t-=dt;updateMushInfo();
   if(MZ.t<=0){MZ.t=0;endMush();}
 }
 function updateMushInfo(){
   const k=Math.max(0,MZ.t/MUSH.roundTime);$('mTimerBar').style.transform=`scaleX(${k.toFixed(3)})`;$('mTimer').classList.toggle('low',MZ.t<=8);
-  $('mInfo').textContent=`Picked ${MZ.good} · ${Math.ceil(MZ.t)}s`;
+  $('mInfo').textContent=G.practice?`Practice · Picked ${MZ.good}`:`Picked ${MZ.good} · ${Math.ceil(MZ.t)}s`;
 }
 function endMush(){
   const goal=MUSH.goal(G.mushLvl);
@@ -1709,7 +1738,7 @@ function startPuzzle(){clearFx();
   do{slots=[...Array(total).keys()].sort(()=>Math.random()-.5);}while(slots.filter((p,s)=>p===s).length>Math.floor(total/4));
   BZ.slots=slots;
   G.state='puzzle';['endScreen','introScreen','hud'].forEach(id=>$(id).hidden=true);$('sbook').hidden=false;
-  $('bInfo').textContent=`Page ${n+1} · ${total} pieces`;
+  $('bInfo').textContent=`${G.practice?'Practice · ':''}Page ${n+1} · ${total} pieces`;
   layoutPuzzle();renderPuzzle();
 }
 function layoutPuzzle(){
@@ -1741,7 +1770,7 @@ document.addEventListener('pointerup',e=>{
 function puzzleSwap(a,b){
   const s=BZ.slots;[s[a],s[b]]=[s[b],s[a]];BZ.sel=null;BZ.drag=null;BZ.moves++;
   Sfx.plip();if(s[b]===b||s[a]===a)Sfx.pop();
-  if(s.every((p,i)=>p===i)){BZ.done=true;Sfx.heal();setTimeout(finishPuzzle,1100);}
+  if(s.every((p,i)=>p===i)){BZ.done=true;Sfx.heal();setTimeout(G.practice?()=>{if(G.state==='puzzle'&&G.practice){G.book.fixed++;startPuzzle();}}:finishPuzzle,1100);}
   renderPuzzle();
 }
 function finishPuzzle(){
@@ -1835,6 +1864,56 @@ function showGraduation(){
 $('rcBtn').onclick=()=>{$('reportScreen').hidden=true;if(G.school.term>SCHOOL.terms)showGraduation();else showIntro();};
 $('gradBtn').onclick=()=>{$('gradScreen').hidden=true;G.school={term:1,history:{}};saveProgress();showIntro();};
 
+/* =====================================================================
+   PRACTICE — endless mode for any one game. Starts easy, keeps getting
+   harder. Never touches school levels, grades or spellbook pieces.
+   ===================================================================== */
+const PRACTICE = {
+  games: [
+    { id:'wand',   name:'Monster Zapping',  start:()=>startRound() },
+    { id:'potion', name:'Potions',          start:()=>startPotion() },
+    { id:'flight', name:'Broom Flying',     start:()=>startFlight() },
+    { id:'mush',   name:'Mushroom Picking', start:()=>startMush() },
+    { id:'book',   name:'Spellbook Repair', start:()=>startPuzzle() },
+  ],
+  potionStreak: 3,   // healed in a row to level up
+};
+const ALL_SCREENS=['hud','pad','fireBtn','potion','shopEnd','mush','sbook','spellCard','endScreen','introScreen','reportScreen','gradScreen','practiceScreen','titleScreen'];
+function hideAllScreens(){ALL_SCREENS.forEach(id=>{const e=$(id);if(e)e.hidden=true;});}
+function showPracticeMenu(){hideAllScreens();G.state='title';$('practiceScreen').hidden=false;}
+function enterPractice(id){
+  Sfx.init();clearFx();
+  G.pSave={wand:G.wandLvl,potion:G.potionLvl,flight:G.flightLvl,mush:G.mushLvl,book:JSON.stringify(G.book),starCharge:G.starCharge,stash:G.stash,team:G.team.slice(),flock:G.flock.slice()};
+  G.practice=id;G.wandLvl=0;G.potionLvl=0;G.flightLvl=0;G.mushLvl=0;G.pStreak=0;G.book.fixed=0;G.score=0;
+  hideAllScreens();$('stage').classList.add('practicing');$('menuBtn').hidden=false;
+  PRACTICE.games.find(g=>g.id===id).start();
+}
+function exitPractice(){
+  if(!G.practice)return;
+  const s=G.pSave;G.wandLvl=s.wand;G.potionLvl=s.potion;G.flightLvl=s.flight;G.mushLvl=s.mush;G.book=JSON.parse(s.book);G.starCharge=s.starCharge;G.stash=s.stash;G.team=s.team;G.flock=s.flock;
+  G.practice=null;FL.holding=false;FL.firing=false;Sfx.stopMusic();clearFx();
+  $('stage').classList.remove('practicing');$('menuBtn').hidden=true;showPracticeMenu();
+}
+function practiceLevelUp(label){Sfx.heal();floatText(label||'Harder!',W/2,H*0.35,'#ffd23a',true);}
+// wand: every 30 seconds the round rolls into the next level instead of ending
+function wandPracticeNext(){
+  G.wandLvl++;G.time=CONFIG.roundTime;const cfg=roundCfg(G.wandLvl);
+  const bk=cfg.book===true?cfg.colors:(cfg.book||'');buildBook(bk||'R');$('book').classList.toggle('hidden',!bk);
+  $('pad').hidden=!cfg.math;G.padH=cfg.math?$('pad').offsetHeight:0;
+  $('roundTag').textContent=`Practice · Wand level ${G.wandLvl+1}`;practiceLevelUp(`Level ${G.wandLvl+1}!`);
+}
+// flight: every 35 seconds, faster and busier
+function flightPracticeNext(){
+  G.flightLvl++;FL.t=FLIGHT.roundTime;const cfg=flightCfg(G.flightLvl);FL.forkAt=[];
+  for(let i=1;i<=cfg.forks;i++)FL.forkAt.push(FLIGHT.roundTime*(1-i/(cfg.forks+1)));
+  $('fireBtn').hidden=!cfg.shoot;updateFireBtn();practiceLevelUp(`Level ${G.flightLvl+1}!`);
+}
+$('practiceBtn').onclick=()=>{Sfx.init();showPracticeMenu();};
+$('practiceBack').onclick=()=>{hideAllScreens();$('titleScreen').hidden=false;showProgressLine();};
+$('menuBtn').addEventListener('click',exitPractice);
+$('practiceList').innerHTML=PRACTICE.games.map(g=>`<button type="button" class="btn pgame" id="practice-${g.id}">${g.name}</button>`).join('');
+PRACTICE.games.forEach(g=>$('practice-'+g.id).addEventListener('click',()=>enterPractice(g.id)));
+
 /* ---------- main loop ---------- */
 let last=performance.now();
 function frame(now){
@@ -1848,7 +1927,7 @@ function update(dt){
   if(G.state==='fly')updateFlight(dt);
   if(G.state==='mush')updateMush(dt);
   if(G.state==='play'){
-    G.time-=dt; if(G.time<=0){G.time=0;updateHud();endRound(true);return;}
+    G.time-=dt; if(G.time<=0){if(G.practice){wandPracticeNext();}else{G.time=0;updateHud();endRound(true);return;}}
     G.spawnT-=dt; if(G.spawnT<=0){spawnMonster(cfg);G.spawnT=cfg.spawnEvery*(0.8+Math.random()*0.4);}
     if(G.strokeTimer>0){G.strokeTimer-=dt;if(G.strokeTimer<=0){G.strokeTimer=-1;readSpell();}}
     for(const m of G.monsters){

@@ -11,6 +11,8 @@ Starring the Witchy Witch of the Witch. A mobile-first Witch School game for the
 4. **Mushroom Picking** – find the matching mushroom, as many as you can in 30 seconds.
 5. **Fixing the Spellbook** – put torn pages back together to learn power-up spells.
 
+**Practice mode:** pick any one game from the title screen and play it endlessly. It keeps getting harder, and it never changes your school progress. Tap ← Menu to leave.
+
 A report card comes after every term. After 12 terms, Graduation Day tells you what kind of witch you are.
 
 Each game has its own level: ★ = down a level, ★★ = same level, ★★★ = up a level. Progress saves in the browser.
