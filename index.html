@@ -90,22 +90,25 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-acti
 .phead{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
 .phead h2{margin:0;font-family:var(--display);font-size:26px;font-weight:400;color:var(--ink);text-shadow:0 2px 0 #000}
 #pInfo{font-size:13px;font-weight:600;color:var(--muted);text-align:right;font-variant-numeric:tabular-nums}
-#custSpot{flex:1 1 auto;min-height:110px}
+.ptop{display:flex;gap:10px;align-items:stretch;flex:0 0 auto}
+#custSpot{flex:0 0 38%;height:min(19vh,150px)}
+.ptop .board{flex:1 1 auto;min-width:0;justify-content:center;padding:6px 8px 8px}
 #bubble{align-self:center;max-width:34ch;background:var(--ink);color:#1b0f30;border-radius:16px;padding:8px 14px;font-weight:600;font-size:15px;line-height:1.3;text-align:center;position:relative;text-wrap:balance}
-#bubble::before{content:"";position:absolute;left:50%;top:-8px;margin-left:-8px;border:8px solid transparent;border-top:0;border-bottom-color:var(--ink)}
+#bubble::before{content:"";position:absolute;left:19%;top:-8px;margin-left:-8px;border:8px solid transparent;border-top:0;border-bottom-color:var(--ink)}
 .board{background:#1d2b25;border:6px solid #7a4e2a;border-radius:12px;padding:8px 14px 10px;box-shadow:inset 0 0 24px rgba(0,0,0,.5),0 4px 0 rgba(0,0,0,.4);display:flex;flex-direction:column;align-items:center;gap:2px}
 .board small{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:rgba(246,239,255,.55);font-weight:600}
 .fline{font:700 34px/1.15 var(--body);letter-spacing:.06em;text-shadow:0 2px 0 rgba(0,0,0,.6);font-variant-numeric:tabular-nums}
-#cauldronSpot{flex:0 0 auto;height:min(21vh,160px)}
-#tableSpace{flex:0 0 auto;height:min(15vw,64px)}
+#cauldronSpot{flex:1 1 auto;min-height:120px;max-height:300px}
+#tableSpace{flex:0 0 auto;height:80px}
 #potion .pbtns .btn{padding:9px 20px;font-size:16px}
 #dropTally{display:flex;gap:4px;justify-content:center;flex-wrap:wrap;min-height:14px}
 #dropTally i{width:12px;height:12px;border-radius:50%;border:1.5px solid rgba(0,0,0,.5)}
 #shelf{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
-#shelf button{width:54px;height:66px;padding:0;background:rgba(20,10,4,.28);border:2px solid rgba(255,220,160,.22);border-radius:14px;cursor:pointer;touch-action:manipulation;box-shadow:0 4px 0 rgba(0,0,0,.45)}
-#shelf button:active{transform:translateY(3px);box-shadow:0 1px 0 rgba(0,0,0,.45)}
+#shelf button{width:60px;height:70px;padding:0;background:none;border:0;border-radius:12px;cursor:pointer;touch-action:manipulation;display:flex;align-items:flex-end;justify-content:center}
+#shelf button:active img{transform:translateY(-6px) rotate(-8deg)}
+#shelf img{height:64px;width:auto;max-width:60px;object-fit:contain;display:block;pointer-events:none;filter:drop-shadow(0 3px 2px rgba(0,0,0,.5));transition:transform .08s}
+#shelf .bfall{display:block;width:34px;height:46px;border-radius:40% 40% 10px 10px;border:2px solid #f6efff}
 #shelf button:focus-visible{outline:3px solid var(--yellow);outline-offset:2px}
-#shelf svg{width:40px;height:56px;display:block;margin:auto}
 .pbtns{display:flex;gap:10px;justify-content:center}
 .pbtns .btn{padding:12px 24px;font-size:18px}
 .btn:disabled{opacity:.5}
@@ -222,14 +225,13 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-acti
 
   <section id="potion" hidden aria-label="Potion Shop">
     <div class="phead"><h2>Potion Shop</h2><div id="pInfo"></div></div>
-    <div id="custSpot"></div>
+    <div class="ptop"><div id="custSpot"></div><div class="board" id="recipe"></div></div>
     <div id="bubble"></div>
-    <div class="board" id="recipe"></div>
     <div id="cauldronSpot"></div>
     <div id="dropTally" aria-live="polite"></div>
-    <div class="pbtns"><button class="btn ghost" id="emptyBtn" type="button">Empty pot</button><button class="btn" id="brewBtn" type="button">Brew!</button></div>
     <div id="shelf"></div>
     <div id="tableSpace" aria-hidden="true"></div>
+    <div class="pbtns"><button class="btn ghost" id="emptyBtn" type="button">Empty pot</button><button class="btn" id="brewBtn" type="button">Brew!</button></div>
   </section>
 
   <div class="overlay" id="shopEnd" hidden>
@@ -1037,10 +1039,10 @@ function nextCustomer(){
   PZ.added=[];PZ.phase='mix';PZ.t=0;PZ.flights=[];
   $('pInfo').textContent=G.practice?`Practice · Potion level ${G.potionLvl+1} · ${PZ.healed} healed`:`Potion level ${G.potionLvl+1} · Customer ${PZ.idx+1} of ${POTION.customers}`;
   $('bubble').textContent=`${PZ.cur.name} ${PZ.cur.ailment}! Can you mix a potion?`;
-  $('recipe').innerHTML=`<small>Recipe</small>`+PZ.cur.recipe.map(l=>`<div class="fline" style="color:${CONFIG.colors[l.c].fill};font-size:${l.text.length>13?24:l.text.length>9?29:34}px">${l.text}</div>`).join('');
+  $('recipe').innerHTML=`<small>Recipe</small>`+PZ.cur.recipe.map(l=>`<div class="fline" style="color:${CONFIG.colors[l.c].fill};font-size:${l.text.length>13?18:l.text.length>9?22:l.text.length>5?27:30}px">${l.text}</div>`).join('');
   $('shelf').innerHTML='';
   shopPalette().forEach(c=>{const col=CONFIG.colors[c],b=document.createElement('button');b.type='button';b.id='bottle'+c;b.setAttribute('aria-label',`Add a ${col.name} drop`);
-    b.innerHTML=`<svg viewBox="0 0 40 56" aria-hidden="true"><path d="M15 6h10v9c7 3 11 9 11 17 0 12-7 20-16 20S4 44 4 32c0-8 4-14 11-17z" fill="rgba(246,239,255,.12)" stroke="#f6efff" stroke-width="2"/><path d="M5.5 31c0 11 6 19 14.5 19s14.5-8 14.5-19z" fill="${col.fill}"/><circle cx="14" cy="38" r="2.5" fill="rgba(255,255,255,.6)"/><rect x="13" y="2" width="14" height="7" rx="2" fill="#8a5a30"/></svg>`;
+    b.innerHTML=`<img src="art/potion-${c}.png" alt="" draggable="false" onerror="this.replaceWith(Object.assign(document.createElement('i'),{className:'bfall',style:'background:${col.fill}'}))">`;
     b.addEventListener('pointerdown',e=>{e.preventDefault();addDrop(c,b);});
     b.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();addDrop(c,b);}});
     $('shelf').appendChild(b);});
@@ -1048,19 +1050,22 @@ function nextCustomer(){
   $('emptyBtn').hidden=false;$('brewBtn').textContent='Brew!';$('brewBtn').disabled=false;
   measurePotion();
 }
+function tableWidth(){const sh=PZ.rects&&PZ.rects.shelf;return Math.min(W-8,(sh?sh.w:300)*1.25+120);}
+function sizeTableSpace(){if(!tableReady)return;const th=tableWidth()*TABLE_IMG.height/TABLE_IMG.width;$('tableSpace').style.height=Math.max(30,Math.round(th*(1-POTION_TABLE.standAt)-14))+'px';}
 function measurePotion(){
   if($('potion').hidden)return;
+  sizeTableSpace();
   const rel=el=>{const r=el.getBoundingClientRect();return {x:r.left-cvRect.left,y:r.top-cvRect.top,w:r.width,h:r.height};};
   PZ.rects={cust:rel($('custSpot')),pot:rel($('cauldronSpot')),shelf:rel($('shelf'))};
 }
 function renderTally(){$('dropTally').innerHTML=PZ.added.map(c=>`<i style="background:${CONFIG.colors[c].fill}"></i>`).join('');}
 // Stephen's potion workbench. standAt = how far down the picture the bottles stand (0 = top, 1 = bottom)
 const POTION_TABLE={src:'art/potion-table.png',standAt:0.5};
-const TABLE_IMG=new Image();let tableReady=false;TABLE_IMG.onload=()=>{tableReady=true;};TABLE_IMG.src=POTION_TABLE.src;
+const TABLE_IMG=new Image();let tableReady=false;TABLE_IMG.onload=()=>{tableReady=true;if(typeof measurePotion==='function')measurePotion();};TABLE_IMG.src=POTION_TABLE.src;
 // Stephen's cauldron art. liquid = where the brew sits in the picture (fractions of its width / height)
 const CAULDRON={src:'art/cauldron.png',liquid:{cx:0.503,cy:0.174,rx:0.296,ry:0.069}};
 const CAULDRON_IMG=new Image();let cauldronReady=false;CAULDRON_IMG.onload=()=>{cauldronReady=true;};CAULDRON_IMG.src=CAULDRON.src;
-function cauldronBox(){const r=PZ.rects.pot,h=r.h,w=h*CAULDRON_IMG.width/CAULDRON_IMG.height;return {x:r.x+(r.w-w)/2,y:r.y,w,h};}
+function cauldronBox(){const r=PZ.rects.pot,asp=CAULDRON_IMG.width/CAULDRON_IMG.height,h=Math.min(r.h,r.w*0.92/asp),w=h*asp;return {x:r.x+(r.w-w)/2,y:r.y+(r.h-h),w,h};}
 function potCenter(){const r=PZ.rects.pot;if(cauldronReady){const b=cauldronBox(),L=CAULDRON.liquid;return {x:b.x+b.w*L.cx,y:b.y+b.h*L.cy};}return {x:r.x+r.w/2,y:r.y+r.h*0.32};}
 function addDrop(c,btn){
   if(PZ.phase!=='mix'||!PZ.rects)return;
@@ -1144,7 +1149,7 @@ function renderPotion(){
   if(tableReady&&PZ.rects.shelf){const sh=PZ.rects.shelf,T=POTION_TABLE,tw=Math.min(W-8,sh.w*1.25+120),th=tw*TABLE_IMG.height/TABLE_IMG.width;
     ctx.save();ctx.imageSmoothingEnabled=false;ctx.drawImage(TABLE_IMG,(W-tw)/2,sh.y+sh.h-6-th*T.standAt,tw,th);ctx.restore();}
   // customer
-  const cr=PZ.rects.cust, c=PZ.cur, R=Math.min(cr.h*0.28,cr.w*0.17);
+  const cr=PZ.rects.cust, c=PZ.cur, R=Math.min(cr.h*0.2,cr.w*0.28);
   const ease=1-Math.pow(1-c.enter,3), cx=cr.x+cr.w/2-(1-ease)*cr.w*0.7, cy=cr.y+cr.h*0.42+Math.sin(G.clock*2)*2;
   ctx.save();ctx.beginPath();ctx.rect(0,cr.y-R*0.8,W,cr.h+R*0.8);ctx.clip();
   const sq=1+c.flip*0.25;ctx.translate(cx,cy);ctx.scale(1/sq,sq);
