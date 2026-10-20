@@ -543,20 +543,24 @@ function buildScenery(){
   c.fillStyle='rgba(255,236,170,.12)';c.beginPath();c.arc(mx,my,mr*1.8,0,7);c.fill();
   c.fillStyle='#ffecaa';c.beginPath();c.arc(mx,my,mr,0,7);c.fill();
   c.fillStyle='rgba(200,170,90,.35)';[[.3,-.2,.18],[-.35,.25,.14],[.1,.4,.1]].forEach(([a,b,r])=>{c.beginPath();c.arc(mx+a*mr,my+b*mr,r*mr,0,7);c.fill();});
-  // far hills + little town of townsfolk (windows lit)
+  // far hills behind the city
   c.fillStyle='#2a1745';c.beginPath();c.moveTo(0,horizon);
   for(let x=0;x<=W;x+=W/8)c.quadraticCurveTo(x+W/16,horizon-H*(0.03+rnd()*0.04),x+W/8,horizon);c.lineTo(W,horizon+2);c.lineTo(0,horizon+2);c.fill();
-  const hs=H*0.028;
+  // Stephen's goblin city on the horizon (falls back to little drawn houses until it loads)
+  if(cityReady){const asp=CITY_IMG.width/CITY_IMG.height,ch=Math.min(W*1.1/asp,horizon*0.62),cw=ch*asp;
+    c.drawImage(CITY_IMG,(W-cw)/2,horizon-ch+H*0.012,cw,ch);}
+  else{const hs=H*0.028;
   for(let i=0;i<9;i++){const x=W*(0.45+i*0.065)+rnd()*6,h=hs*(0.8+rnd()*0.9),w=hs*(0.9+rnd()*0.5);
     c.fillStyle='#1d1033';c.fillRect(x,horizon-h,w,h);c.beginPath();c.moveTo(x-2,horizon-h);c.lineTo(x+w/2,horizon-h-w*0.6);c.lineTo(x+w+2,horizon-h);c.fill();
-    c.fillStyle='#ffcf5a';if(rnd()>.3)c.fillRect(x+w*0.3,horizon-h*0.65,w*0.25,h*0.25);}
+    c.fillStyle='#ffcf5a';if(rnd()>.3)c.fillRect(x+w*0.3,horizon-h*0.65,w*0.25,h*0.25);}}
   // field: perspective rows
   c.fillStyle='#1b2a1f';c.fillRect(0,horizon,W,H-horizon);
   let z=40,k=0;while(z>0.5){const z2=z/1.22;const y1=groundY(z),y2=groundY(z2);c.fillStyle=k%2?'#22372a':'#1c2d22';c.fillRect(0,y1,W,y2-y1+1);z=z2;k++;}
   const fog=c.createLinearGradient(0,horizon,0,horizon+H*0.12);fog.addColorStop(0,'rgba(120,80,160,.55)');fog.addColorStop(1,'rgba(120,80,160,0)');c.fillStyle=fog;c.fillRect(0,horizon,W,H*0.12);
-  // side props: tombstones and pumpkins
-  const props=[[-1.9,9,'t'],[1.8,11,'p'],[-1.6,5.5,'p'],[1.7,6.5,'t'],[-1.75,3.4,'t'],[1.65,2.6,'p'],[-1.4,2.1,'p'],[2.0,4.2,'t']];
+  // side props: tombstones, pumpkins and Stephen's stumps
+  const props=[[-1.9,9,'t'],[1.8,11,'p'],[-2.3,14,'s'],[2.4,8,'s'],[-1.6,5.5,'p'],[1.7,6.5,'t'],[-1.75,3.4,'t'],[-2.1,4.6,'s'],[1.65,2.6,'p'],[-1.4,2.1,'p'],[2.0,4.2,'t'],[2.25,3.1,'s']];
   props.sort((a,b)=>b[1]-a[1]).forEach(([lx,z,t])=>{const p=proj(lx,z);const s=p.s*0.45;
+    if(t==='s'){if(!stumpReady)return;const sw=p.s*1.25,sh=sw*STUMP_IMG.height/STUMP_IMG.width;c.save();c.imageSmoothingEnabled=false;c.translate(p.x,p.y);if(lx>0)c.scale(-1,1);c.drawImage(STUMP_IMG,-sw/2,-sh,sw,sh);c.restore();return;}
     if(t==='t'){c.fillStyle='#5d5378';c.beginPath();c.moveTo(p.x-s*0.4,p.y);c.lineTo(p.x-s*0.4,p.y-s*0.8);c.arc(p.x,p.y-s*0.8,s*0.4,PI,0);c.lineTo(p.x+s*0.4,p.y);c.fill();
       c.fillStyle='#3e3657';c.fillRect(p.x-s*0.18,p.y-s*0.85,s*0.36,s*0.07);c.fillRect(p.x-s*0.04,p.y-s*0.98,s*0.08,s*0.36);}
     else{c.fillStyle='#e8781e';c.beginPath();c.ellipse(p.x,p.y-s*0.3,s*0.42,s*0.3,0,0,7);c.fill();
@@ -566,6 +570,9 @@ function buildScenery(){
       c.beginPath();c.moveTo(p.x+s*0.2,p.y-s*0.36);c.lineTo(p.x+s*0.1,p.y-s*0.26);c.lineTo(p.x+s*0.28,p.y-s*0.26);c.fill();}});
 }
 const PI=Math.PI;
+const CITY_IMG=new Image();let cityReady=false;
+const rebuildScenery=()=>{if(W>0)buildScenery();};
+CITY_IMG.onload=()=>{cityReady=true;rebuildScenery();};CITY_IMG.src='art/goblin-city.png';
 
 /* ---------- monsters ---------- */
 // a monster has need:[letters still to zap]. Solid monsters need 1, striped / polka-dot need 2.
@@ -1152,7 +1159,7 @@ const FLIGHT = {
   /* speed = how fast you fly. trees / supplies / enemies / power / logs = how many per second.
      wisps = share of enemies that are chasing wisps. forks = path splits per flight. goal = points for 3 stars */
   levels: [
-    { speed:9,  trees:1.0, supplies:0.9, enemies:0,   power:0,    logs:0,    forks:0, shoot:false, goal:25,
+    { speed:9,  trees:1.0, stumps:0.15, supplies:0.9, enemies:0,   power:0,    logs:0,    forks:0, shoot:false, goal:25,
       intro:'Fly into the Dark Forest for potion supplies! Drag your finger to steer. Grab goodies, dodge trees.' },
     { speed:11, trees:1.2, supplies:0.8, enemies:0.5, power:0.06, logs:0,    forks:0, shoot:true,  goal:30,
       intro:'Bats ahead! Hold the ZAP button to shoot sparks. Don\'t run your magic dry!' },
@@ -1181,7 +1188,11 @@ const FLIGHT = {
   /* Stephen's fallen log lies across the path: fly HIGH to clear it.
      width = how wide it is in the world. clear = how high you must fly over the middle; the upturned ends are taller. */
   logArt: { src:'art/fallen-log.png', width:8.4, clear:1.45, endClear:1.95, endsAt:2.4 },
+  /* Stephen's stump: low and chunky. Fly over it or steer around it.
+     width = how wide in the world. hitWidth / clear = the bump zone (sideways / how high to fly). rate = stumps per second. */
+  stumpArt: { src:'art/forest-stump.png', width:2.6, hitWidth:0.9, clear:1.3, rate:0.3 },
 };
+const STUMP_IMG=new Image();let stumpReady=false;STUMP_IMG.onload=()=>{stumpReady=true;rebuildScenery();};STUMP_IMG.src=FLIGHT.stumpArt.src;
 const LOG_IMG=new Image();let logReady=false;
 LOG_IMG.onload=()=>{logReady=true;};LOG_IMG.src=FLIGHT.logArt.src;
 FLIGHT.treeArt.forEach(t=>{t.img=new Image();t.img.onload=()=>{t.ready=true;};t.img.src=t.src;});
@@ -1231,6 +1242,8 @@ function spawnFlight(cfg,dt){
     const wisp=Math.random()<(cfg.wisps||0);add({kind:wisp?'wisp':'bat',x:frand(-3,3),y:frand(0.9,2.6),z:Z,phase:Math.random()*6,alive:true});
   }
   if(cfg.power)for(let i=tick('pow',cfg.power*b.pow);i>0;i--)add({kind:'power',x:frand(-2.6,2.6),y:frand(1,2.4),z:Z});
+  if(!nearFork)for(let i=tick('stump',cfg.stumps??FLIGHT.stumpArt.rate);i>0;i--){const x=frand(-2.8,2.8);
+    if(!FL.objs.some(o=>(o.kind==='tree'||o.kind==='stump')&&o.z>Z-6&&Math.abs(o.x-x)<1.8))add({kind:'stump',x,z:Z,flip:Math.random()<0.5});}
   for(let i=tick('page',SPELLBOOK.forestPageRate);i>0;i--)add({kind:'page',x:frand(-2.6,2.6),y:frand(1,2.4),z:Z});
   if(cfg.logs&&!nearFork)for(let i=tick('log',cfg.logs);i>0;i--)add({kind:'log',z:Z});
   if(FL.forkAt.length&&FL.t<=FL.forkAt[0]){FL.forkAt.shift();
@@ -1278,6 +1291,7 @@ function updateFlight(dt){
     if(pz>0&&o.z<=0){ // reached the witch
       const dx=Math.abs(o.x-FL.px),dy=Math.abs((o.y||0)-FL.py);
       if(o.kind==='tree'&&dx<0.55)flightHit();
+      else if(o.kind==='stump'){const S=FLIGHT.stumpArt;if(dx<S.hitWidth&&FL.py<S.clear)flightHit();}
       else if(o.kind==='log'){const L=FLIGHT.logArt;if(FL.py<(Math.abs(FL.px)>L.endsAt?L.endClear:L.clear))flightHit();}
       else if(o.kind==='fork'){
         if(Math.abs(FL.px)<0.75)flightHit();
@@ -1368,6 +1382,10 @@ function renderFlight(){
     for(let i=0;i<3;i++){ctx.fillStyle=i<FL.power?'#ffd23a':'rgba(246,239,255,.2)';ctx.save();ctx.translate(W-62+i*20,H-29);star(0,0,8);ctx.restore();}}
 }
 function drawFlightObj(o,b){
+  if(o.kind==='stump'){const S=FLIGHT.stumpArt,q=fproj(o.x,0,o.z);if(!q)return;const w=S.width*q.k,h=stumpReady?w*STUMP_IMG.height/STUMP_IMG.width:w*0.6,fogT=Math.max(0,Math.min(1,o.z/FLIGHT.zFar));
+    ctx.save();ctx.globalAlpha=Math.max(0.15,1-fogT*1.1);ctx.translate(q.x,q.y);if(o.flip)ctx.scale(-1,1);
+    if(stumpReady){ctx.imageSmoothingEnabled=false;ctx.drawImage(STUMP_IMG,-w/2,-h,w,h);}else{ctx.fillStyle=fogged('#5a3a22',o.z);ctx.fillRect(-w*0.3,-h*0.8,w*0.6,h*0.8);}
+    ctx.restore();return;}
   if(o.kind==='log'){const L=FLIGHT.logArt,a=fproj(-L.width/2,0,o.z),c=fproj(L.width/2,0,o.z);if(!a)return;
     const w=c.x-a.x,h=logReady?w*LOG_IMG.height/LOG_IMG.width:w/3.6,fogT=Math.max(0,Math.min(1,o.z/FLIGHT.zFar));
     ctx.save();ctx.globalAlpha=Math.max(0.15,1-fogT*1.1);
