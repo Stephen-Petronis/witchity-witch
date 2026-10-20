@@ -941,20 +941,21 @@ $('mute').onclick=()=>{const m=Sfx.toggle();$('mute').textContent=m?'×':'♪';}
    ===================================================================== */
 const POTION = {
   customers: 3,            // customers per shop visit
-  maxDrops: 28,
+  maxDrops: 40,
   /* POTION LEVELS. 3 healed = 3★ (up), 2 healed = 2★ (same), 1 or 0 = 1★ (down).
      lines = recipe lines, ops = + - x /, terms = numbers per line, maxAns = most drops of one color,
-     zero = a line can come out to 0 (add none!), colors = bottles on the shelf */
+     zero = a line can come out to 0 (add none!), colors = bottles on the shelf (5 at most, so they fit on one row) */
   levels: [
     { lines:2, ops:'+',    terms:2, maxAns:4, zero:false, colors:'RYG' },
     { lines:2, ops:'+-',   terms:2, maxAns:4, zero:false, colors:'RYG' },
     { lines:2, ops:'+-',   terms:2, maxAns:5, zero:false, colors:'RYGB' },
     { lines:3, ops:'+-',   terms:2, maxAns:5, zero:true,  colors:'RYGBP' },
-    { lines:3, ops:'+-',   terms:2, maxAns:6, zero:true,  colors:'RYGBPW' },
-    { lines:3, ops:'+-',   terms:3, maxAns:6, zero:true,  colors:'RYGBPWT' },
-    { lines:4, ops:'+-',   terms:3, maxAns:6, zero:true,  colors:'RYGBPWTO' },
-    { lines:4, ops:'+-x',  terms:2, maxAns:8, zero:true,  colors:'RYGBPWTO' },
-    { lines:4, ops:'+-x/', terms:2, maxAns:8, zero:true,  colors:'RYGBPWTO' },
+    { lines:3, ops:'+-',   terms:3, maxAns:5, zero:true,  colors:'RYGBP' },
+    { lines:3, ops:'+-',   terms:4, maxAns:6, zero:true,  colors:'RYGBP' },
+    { lines:4, ops:'+-',   terms:4, maxAns:6, zero:true,  colors:'RYGBP' },
+    { lines:4, ops:'+-',   terms:5, maxAns:7, zero:true,  colors:'RYGBP' },
+    { lines:4, ops:'+-x',  terms:4, maxAns:8, zero:true,  colors:'RYGBP' },
+    { lines:4, ops:'+-x/', terms:4, maxAns:8, zero:true,  colors:'RYGBP' },
   ],
   folks: [
     ['Baker Bun','can\'t stop sneezing flour'],['Farmer Fig','has the wobbly-knees'],['Mayor Mudge','has a terrible tummy-rumble'],
@@ -970,15 +971,25 @@ G.team=G.team||[];G.flock=G.flock||[];   // healed friends and chicken-ified tow
 
 const rint=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
 function potionLevelCfg(){return POTION.levels[Math.min(G.potionLvl,POTION.levels.length-1)];}
+// a recipe line whose answer is `ans`: a chain like 3 + 2 − 1 + 2 with `terms` numbers (every step stays 0-9),
+// or at the top levels sometimes a quick × / ÷
 function expr(ans,ops,terms){
   const op=ops[rint(0,ops.length-1)];
-  if(op==='x'){const f=[1,2,3,4,5].filter(k=>ans%k===0&&ans/k<=5);if(ans===0)return `0 × ${rint(1,5)}`;const k=f[rint(0,f.length-1)];return `${k} × ${ans/k}`;}
+  if(op==='x'){if(ans===0)return `0 × ${rint(1,5)}`;const f=[2,3,4,5].filter(k=>ans%k===0&&ans/k<=5&&ans/k>=1);if(f.length){const k=f[rint(0,f.length-1)];return `${k} × ${ans/k}`;}}
   if(op==='/'){const b=rint(1,3);return `${ans*b} ÷ ${b}`;}
-  if(terms>=3){ // three numbers: a + b − c  or  a − b + c
-    if(Math.random()<0.5){const c=rint(1,3),d=ans+c,a=rint(0,d);return `${a} + ${d-a} − ${c}`;}
-    const c=rint(0,ans),d=ans-c,b=rint(1,3);return `${d+b} − ${b} + ${c}`;}
-  if(op==='+'){let a=rint(0,ans),b=ans-a;if(ans>=2&&(a===0||b===0)){a=rint(1,ans-1);b=ans-a;}return `${a} + ${b}`;}
-  const b=rint(1,Math.min(4,9-ans));return `${ans+b} − ${b}`;
+  const canSub=ops.includes('-');
+  for(let tries=0;tries<200;tries++){
+    let run=rint(0,9),parts=[String(run)],ok=true;
+    for(let i=1;i<terms-1;i++){
+      const sub=canSub&&(run>=9||(Math.random()<0.5&&run>0)), hi=sub?Math.min(5,run):Math.min(5,9-run);
+      if(hi<1){ok=false;break;}const v=rint(1,hi);run+=sub?-v:v;parts.push(sub?'−':'+',String(v));
+    }
+    const d=ans-run;if(!ok||d===0||(d<0&&!canSub)||Math.abs(d)>5)continue;
+    parts.push(d>0?'+':'−',String(Math.abs(d)));
+    if(terms===2&&parts[0]==='0'&&ans>=2)continue;
+    return parts.join(' ');
+  }
+  return `${ans} + 0`;
 }
 function makeRecipe(L,palette){
   const cols=palette.slice().sort(()=>Math.random()-.5).slice(0,Math.min(L.lines,palette.length));
@@ -1006,7 +1017,7 @@ function nextCustomer(){
   PZ.added=[];PZ.phase='mix';PZ.t=0;PZ.flights=[];
   $('pInfo').textContent=G.practice?`Practice · Potion level ${G.potionLvl+1} · ${PZ.healed} healed`:`Potion level ${G.potionLvl+1} · Customer ${PZ.idx+1} of ${POTION.customers}`;
   $('bubble').textContent=`${PZ.cur.name} ${PZ.cur.ailment}! Can you mix a potion?`;
-  $('recipe').innerHTML=`<small>Recipe</small>`+PZ.cur.recipe.map(l=>`<div class="fline" style="color:${CONFIG.colors[l.c].fill}">${l.text}</div>`).join('');
+  $('recipe').innerHTML=`<small>Recipe</small>`+PZ.cur.recipe.map(l=>`<div class="fline" style="color:${CONFIG.colors[l.c].fill};font-size:${l.text.length>13?24:l.text.length>9?29:34}px">${l.text}</div>`).join('');
   $('shelf').innerHTML='';
   shopPalette().forEach(c=>{const col=CONFIG.colors[c],b=document.createElement('button');b.type='button';b.id='bottle'+c;b.setAttribute('aria-label',`Add a ${col.name} drop`);
     b.innerHTML=`<svg viewBox="0 0 40 56" aria-hidden="true"><path d="M15 6h10v9c7 3 11 9 11 17 0 12-7 20-16 20S4 44 4 32c0-8 4-14 11-17z" fill="rgba(246,239,255,.12)" stroke="#f6efff" stroke-width="2"/><path d="M5.5 31c0 11 6 19 14.5 19s14.5-8 14.5-19z" fill="${col.fill}"/><circle cx="14" cy="38" r="2.5" fill="rgba(255,255,255,.6)"/><rect x="13" y="2" width="14" height="7" rx="2" fill="#8a5a30"/></svg>`;
@@ -1542,17 +1553,20 @@ function mushSVG(m){
     ${dots}</g></svg>`;
 }
 const mushKey=m=>`${m.shape}|${m.color}|${m.size}|${m.dots}|${m.dotColor}`;
+const lookKey=m=>`${m.shape}|${m.color}|${m.dots}|${m.dotColor}`;   // everything except size
 function mushPools(cfg){const d=[];for(let n=cfg.dots[0];n<=cfg.dots[1];n++)d.push(n);
   return {shape:cfg.shapes,color:cfg.colors.split(''),size:['small','medium','large'].slice(3-cfg.sizes),dots:d,dotColor:cfg.dotColors};}
 function makePatch(cfg){
   const pools=mushPools(cfg),pickOne=a=>a[Math.floor(Math.random()*a.length)];
   const target={};for(const k in pools)target[k]=pickOne(pools[k]);
-  const keys=Object.keys(pools).filter(k=>pools[k].length>1),seen=new Set([mushKey(target)]),out=[];
+  const keys=Object.keys(pools).filter(k=>pools[k].length>1),seen=new Set([lookKey(target)]),out=[];
   const n=cfg.grid[0]*cfg.grid[1]-1;
   for(let tries=0;out.length<n&&tries<500;tries++){
     const m={...target},want=Math.min(keys.length,cfg.minDiff+(Math.random()<0.4?1:0));
-    keys.slice().sort(()=>Math.random()-.5).slice(0,want).forEach(k=>{const opts=pools[k].filter(v=>v!==target[k]);m[k]=pickOne(opts);});
-    const key=mushKey(m);if(!seen.has(key)){seen.add(key);out.push(m);}
+    const looks=keys.filter(k=>k!=='size'),pickKeys=[looks[rint(0,looks.length-1)],...keys.filter(k=>true).sort(()=>Math.random()-.5)].filter((k,i,a)=>a.indexOf(k)===i).slice(0,Math.max(1,want));
+    pickKeys.forEach(k=>{const opts=pools[k].filter(v=>v!==target[k]);m[k]=pickOne(opts);});
+    // size is too hard to judge by itself, so every wrong mushroom must also differ in shape, color or dots
+    const key=lookKey(m);if(!seen.has(key)){seen.add(key);out.push(m);}
   }
   const cells=out.concat([target]).sort(()=>Math.random()-.5);
   return {target,cells,answer:cells.indexOf(target)};
