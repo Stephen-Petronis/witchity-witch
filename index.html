@@ -171,6 +171,15 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-acti
 .talents i{height:10px;border-radius:5px;background:rgba(122,78,42,.2);overflow:hidden;display:block}
 .talents i b{display:block;height:100%;background:#a64dff;border-radius:5px}
 .talents span{font-family:var(--display);font-size:20px;color:#c0281e;text-align:right}
+/* How-to cards */
+.demo{display:flex;gap:22px;align-items:flex-end;justify-content:center}
+.dm{display:flex;flex-direction:column;align-items:center;gap:6px}
+.dm small{font-size:13px;font-weight:700;color:var(--muted)}
+.blob{border-radius:50%;display:flex;align-items:center;justify-content:center;border:3px solid #1a1028;box-shadow:0 4px 0 rgba(0,0,0,.4)}
+.blob b{font:700 26px var(--body);color:#fff;-webkit-text-stroke:1.5px #1a1028;paint-order:stroke}
+.sign{background:#c98d4b;border:3px solid #5c3a17;border-radius:8px;padding:6px 14px;font:700 28px var(--body);color:#2a1608}
+.key{width:58px;height:58px;border-radius:14px;background:#24173f;border:2px solid rgba(246,239,255,.35);display:flex;align-items:center;justify-content:center;font:700 30px var(--body);color:var(--ink);box-shadow:0 4px 0 rgba(0,0,0,.45)}
+.glyph{font-size:72px;line-height:1;color:var(--yellow);text-shadow:0 0 18px rgba(255,210,58,.6),0 3px 0 #000}
 /* Practice mode */
 #menuBtn{position:absolute;top:10px;left:max(16px,env(safe-area-inset-left,0px));z-index:5;font:700 15px var(--body);color:var(--ink);
   background:rgba(23,15,46,.85);border:1.5px solid rgba(246,239,255,.35);border-radius:999px;padding:7px 14px;cursor:pointer;touch-action:manipulation}
@@ -312,6 +321,7 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-acti
     <div class="card">
       <h2 class="title" id="introTitle">Round 1</h2>
       <p class="sub" id="introText"></p>
+      <div class="demo" id="introDemo" hidden></div>
       <button class="btn" id="goBtn" type="button">Go!</button>
     </div>
   </div>
@@ -468,6 +478,10 @@ const Rec = (() => {
   // five-point star for the Star Wand spell (one stroke; $P doesn't care where you start)
   const starPts=[0,2,4,1,3,0].map(i=>{const a=-PI/2+i*PI*2/5;return [0.5+0.5*Math.cos(a),0.52+0.5*Math.sin(a)];});
   add('*',[starPts]);
+  // six-point star: two triangles (either order, any start)
+  const triUp=[0,1,2,0].map(i=>{const a=-PI/2+i*PI*2/3;return [0.5+0.5*Math.cos(a),0.5+0.5*Math.sin(a)];});
+  const triDn=[0,1,2,0].map(i=>{const a=PI/2+i*PI*2/3;return [0.5+0.5*Math.cos(a),0.5+0.5*Math.sin(a)];});
+  add('*',[triUp,triDn]);
   // returns letters ranked best-first: [{name,dist},...] (only letters in `allowed`)
   function recognize(raw,allowed){if(raw.length<6)return null;const c=norm(raw),per={};
     for(const t of T){if(allowed&&!allowed.includes(t.name))continue;const d=match(c,t.pts);if(!(t.name in per)||d<per[t.name])per[t.name]=d;}
@@ -531,8 +545,8 @@ function roundCfg(i){
 }
 /* ---------- saved progress (this browser only) ---------- */
 const SAVE_KEY='witchity-progress';
-function loadProgress(){try{const d=JSON.parse(localStorage.getItem(SAVE_KEY)||'{}');G.wandLvl=d.wand|0;G.potionLvl=d.potion|0;G.flightLvl=d.flight|0;G.mushLvl=d.mush|0;G.stash=d.stash|0;if(d.school)G.school={term:d.school.term||1,history:d.school.history||{}};if(d.term)G.termRec=d.term;if(d.book)G.book={pieces:d.book.pieces|0,fixed:d.book.fixed|0,lv:{...G.book.lv,...(d.book.lv||{})}};G.team=d.team||[];G.flock=d.flock||[];}catch(e){}}
-function saveProgress(){if(G.practice)return;try{localStorage.setItem(SAVE_KEY,JSON.stringify({wand:G.wandLvl,potion:G.potionLvl,flight:G.flightLvl,mush:G.mushLvl,book:G.book,school:G.school,term:G.termRec,stash:G.stash||0,team:G.team,flock:G.flock}));}catch(e){}}
+function loadProgress(){try{const d=JSON.parse(localStorage.getItem(SAVE_KEY)||'{}');G.wandLvl=d.wand|0;G.potionLvl=d.potion|0;G.flightLvl=d.flight|0;G.mushLvl=d.mush|0;G.stash=d.stash|0;if(d.seen)G.seen=d.seen;if(d.school)G.school={term:d.school.term||1,history:d.school.history||{}};if(d.term)G.termRec=d.term;if(d.book)G.book={pieces:d.book.pieces|0,fixed:d.book.fixed|0,lv:{...G.book.lv,...(d.book.lv||{})}};G.team=d.team||[];G.flock=d.flock||[];}catch(e){}}
+function saveProgress(){if(G.practice)return;try{localStorage.setItem(SAVE_KEY,JSON.stringify({wand:G.wandLvl,potion:G.potionLvl,flight:G.flightLvl,mush:G.mushLvl,book:G.book,school:G.school,term:G.termRec,seen:G.seen,stash:G.stash||0,team:G.team,flock:G.flock}));}catch(e){}}
 function starsToMove(stars){return stars===3?1:stars===1?-1:0;}
 function levelMsg(stars,newLvl,what){
   return stars===3?`Level up! ${what} level ${newLvl+1} next time.`:stars===2?`Nice! Let's try ${what} level ${newLvl+1} again.`:`Let's practice ${what} level ${newLvl+1} next time.`;
@@ -899,11 +913,14 @@ function buildBook(letters){ $('book').innerHTML=letters.split('').map(l=>`<div 
 function clearFx(){Object.assign(G,{bolts:[],strokes:[],curStroke:null,strokeTimer:-1,fadeTrail:null,parts:[],floats:[],flash:0,shake:0,wandAim:null});}
 function showIntro(){clearFx();
   const cfg=roundCfg(G.wandLvl);G.state='intro';G.introGo=startRound;
-  $('introTitle').textContent=`Round ${G.roundNum+1}`;$('introText').textContent=cfg.intro;
+  G.pendingSeen=dueTutorial(cfg,G.seen);$('goBtn').textContent='Go!';
+  if(G.pendingSeen)fillIntroCard(TUTORIALS[G.pendingSeen].title,TUTORIALS[G.pendingSeen].text,G.pendingSeen);
+  else fillIntroCard(`Round ${G.roundNum+1}`,cfg.intro,null);
   $('potion').hidden=true;$('shopEnd').hidden=true;$('mush').hidden=true;$('fireBtn').hidden=true;$('sbook').hidden=true;$('spellCard').hidden=true;$('reportScreen').hidden=true;$('gradScreen').hidden=true;
   $('introScreen').hidden=false;$('endScreen').hidden=true;$('titleScreen').hidden=true;$('hud').hidden=true;
 }
 function startRound(){
+  if(G.pendingSeen&&!G.practice){G.seen[G.pendingSeen]=true;G.pendingSeen=null;saveProgress();}
   const cfg=roundCfg(G.wandLvl);
   Object.assign(G,{state:'play',time:CONFIG.roundTime,spawnT:0.6,hearts:CONFIG.hearts,zaps:0,bonks:0,monsters:[],bolts:[],strokes:[],curStroke:null,strokeTimer:-1,fadeTrail:null,lastSpawnLetters:[]});
   $('introScreen').hidden=true;$('hud').hidden=false;$('roundTag').textContent=`${G.practice?'Practice · ':''}Wand level ${G.wandLvl+1}`;
@@ -930,7 +947,7 @@ function endRound(won){
 function updateHud(){ updateSpellBar(); $('timer').textContent=Math.ceil(Math.max(0,G.time)); $('timer').classList.toggle('low',G.time<=5); $('score').textContent=`${G.zaps} zapped`; }
 
 $('startBtn').onclick=()=>{Sfx.init();G.score=0;showIntro();};
-$('resetBtn').onclick=()=>{G.wandLvl=0;G.potionLvl=0;G.flightLvl=0;G.mushLvl=0;G.stash=0;G.book={pieces:0,fixed:0,lv:{star:0,lantern:0,broom:0,rainbow:0}};G.starCharge=0;G.school={term:1,history:{}};G.termRec={};G.team=[];G.flock=[];saveProgress();showProgressLine();};
+$('resetBtn').onclick=()=>{G.wandLvl=0;G.potionLvl=0;G.flightLvl=0;G.mushLvl=0;G.stash=0;G.book={pieces:0,fixed:0,lv:{star:0,lantern:0,broom:0,rainbow:0}};G.starCharge=0;G.school={term:1,history:{}};G.termRec={};G.seen={};G.team=[];G.flock=[];saveProgress();showProgressLine();};
 $('goBtn').onclick=()=>(G.introGo||startRound)();
 $('nextBtn').onclick=()=>(G.afterEnd||startPotion)();
 $('mute').onclick=()=>{const m=Sfx.toggle();$('mute').textContent=m?'×':'♪';};
@@ -1239,7 +1256,7 @@ const FL={};
 function flightCfg(i){const L=FLIGHT.levels;if(i<L.length)return L[i];const last=L[L.length-1],k=i-L.length+1;
   return {...last,speed:Math.min(20,last.speed+0.6*k),trees:last.trees+0.1*k,enemies:last.enemies+0.15*k,forks:3,goal:last.goal+4*k,intro:'Faster and wilder!'};}
 
-function showFlightIntro(){clearFx();
+function showFlightIntro(){clearFx();$('introDemo').hidden=true;$('goBtn').textContent='Go!';
   G.state='intro';G.introGo=startFlight;
   ['potion','shopEnd','endScreen','titleScreen','hud','pad'].forEach(id=>$(id).hidden=true);
   $('introTitle').textContent='Into the Dark Forest';$('introText').textContent=flightCfg(G.flightLvl).intro;$('introScreen').hidden=false;
@@ -1572,7 +1589,7 @@ function makePatch(cfg){
   return {target,cells,answer:cells.indexOf(target)};
 }
 
-function showMushIntro(){clearFx();
+function showMushIntro(){clearFx();$('introDemo').hidden=true;$('goBtn').textContent='Go!';
   G.state='intro';G.introGo=startMush;
   ['potion','shopEnd','endScreen','titleScreen','hud','pad','fireBtn','mush'].forEach(id=>$(id).hidden=true);
   $('introTitle').textContent='Mushroom Picking';$('introText').textContent=MUSH.intros[G.mushLvl===0?0:1];$('introScreen').hidden=false;
@@ -1644,7 +1661,7 @@ const SPELLBOOK = {
   order: ['star','lantern','broom','rainbow'],  // pages 1-4 teach these; later pages upgrade them in turn
   spells: {
     star:    { name:'Star Wand',        color:'#ffd23a',
-      learn:'Zap monsters to charge it. When the star glows, trace a ★ to blow up every monster at once!',
+      learn:'Zap monsters to charge it. When the star glows, trace a star with 5 or 6 points to blow up every monster at once!',
       up:'Your Star Wand charges faster!' },
     lantern: { name:'Mushroom Lantern', color:'#ffb347',
       learn:'In the mushroom patch, tap Lantern to fade away half of the wrong mushrooms. Two uses every round.',
@@ -1879,12 +1896,46 @@ $('rcBtn').onclick=()=>{$('reportScreen').hidden=true;if(G.school.term>SCHOOL.te
 $('gradBtn').onclick=()=>{$('gradScreen').hidden=true;G.school={term:1,history:{}};saveProgress();showIntro();};
 
 /* =====================================================================
+   HOW-TO CARDS — the first time a new move shows up in the monster
+   battle, the round card explains it. New colors and the zebra stay
+   a surprise on purpose.
+   ===================================================================== */
+const TUTORIALS = {
+  twoTone: { title:'Two-color monsters!', when:cfg=>cfg.twoTone,
+    text:'Striped and polka-dot monsters are two colors. Trace BOTH letters, one at a time, in any order.',
+    demo:()=>`<div class="dm"><div class="blob" style="width:86px;height:86px;background:repeating-linear-gradient(0deg,#ff4a3d 0 12px,#3d8bff 12px 24px)"><b>R B</b></div><small>stripes</small></div>
+      <div class="dm"><div class="blob" style="width:86px;height:86px;background:radial-gradient(circle,#4fe06a 6px,transparent 7px) 0 0/22px 22px,#ffd23a"><b>Y G</b></div><small>polka dots</small></div>` },
+  cases:   { title:'Big and little monsters!', when:cfg=>cfg.cases,
+    text:'Big monsters need a capital letter. Little monsters need a lowercase letter.',
+    demo:()=>`<div class="dm"><div class="blob" style="width:96px;height:96px;background:#ff4a3d"><b style="font-size:46px">R</b></div><small>big = R</small></div>
+      <div class="dm"><div class="blob" style="width:56px;height:56px;background:#ff4a3d"><b style="font-size:30px">r</b></div><small>little = r</small></div>` },
+  math:    { title:'Number ghosts!', when:cfg=>cfg.math,
+    text:'Ghosts hold up a math problem. Tap the answer on the number pad to poof them away.',
+    demo:()=>`<div class="dm"><div class="sign">3 + 2</div><small>the ghost's sign</small></div><div class="dm"><div class="key">5</div><small>tap the answer</small></div>` },
+  star:    { title:'Star Wand!', when:()=>spellLv('star')>0,
+    text:'Zap monsters to fill your ★ meter. When it glows, trace a star with 5 or 6 points to blast every monster at once!',
+    demo:()=>`<div class="dm"><div class="glyph">★</div><small>5 points</small></div><div class="dm"><div class="glyph">✡</div><small>6 points</small></div>` },
+};
+G.seen=G.seen||{};
+function dueTutorial(cfg,seen){for(const k in TUTORIALS)if(!seen[k]&&TUTORIALS[k].when(cfg))return k;return null;}
+function fillIntroCard(title,text,key){
+  $('introTitle').textContent=title;$('introText').textContent=text;
+  const d=$('introDemo');if(key){d.innerHTML=TUTORIALS[key].demo();d.hidden=false;}else{d.innerHTML='';d.hidden=true;}
+}
+// practice: pause mid-game to explain a new move
+function practiceTutorial(key){
+  G.pSeen[key]=true;G.state='intro';G.introGo=()=>{$('introScreen').hidden=true;$('hud').hidden=false;G.state='play';};
+  fillIntroCard(TUTORIALS[key].title,TUTORIALS[key].text,key);
+  $('goBtn').textContent='Got it!';$('hud').hidden=true;$('introScreen').hidden=false;
+}
+
+/* =====================================================================
    PRACTICE — endless mode for any one game. Starts easy, keeps getting
    harder. Never touches school levels, grades or spellbook pieces.
    ===================================================================== */
 const PRACTICE = {
   games: [
-    { id:'wand',   name:'Monster Zapping',  start:()=>startRound() },
+    { id:'wand',   name:'Monster Zapping',  start:()=>{startRound();const t=dueTutorial(roundCfg(0),G.pSeen);if(t)practiceTutorial(t);} },
     { id:'potion', name:'Potions',          start:()=>startPotion() },
     { id:'flight', name:'Broom Flying',     start:()=>startFlight() },
     { id:'mush',   name:'Mushroom Picking', start:()=>startMush() },
@@ -1898,7 +1949,7 @@ function showPracticeMenu(){hideAllScreens();G.state='title';$('practiceScreen')
 function enterPractice(id){
   Sfx.init();clearFx();
   G.pSave={wand:G.wandLvl,potion:G.potionLvl,flight:G.flightLvl,mush:G.mushLvl,book:JSON.stringify(G.book),starCharge:G.starCharge,stash:G.stash,team:G.team.slice(),flock:G.flock.slice()};
-  G.practice=id;G.wandLvl=0;G.potionLvl=0;G.flightLvl=0;G.mushLvl=0;G.pStreak=0;G.book.fixed=0;G.score=0;
+  G.pSeen={};G.practice=id;G.wandLvl=0;G.potionLvl=0;G.flightLvl=0;G.mushLvl=0;G.pStreak=0;G.book.fixed=0;G.score=0;
   hideAllScreens();$('stage').classList.add('practicing');$('menuBtn').hidden=false;
   PRACTICE.games.find(g=>g.id===id).start();
 }
@@ -1915,6 +1966,7 @@ function wandPracticeNext(){
   const bk=cfg.book===true?cfg.colors:(cfg.book||'');buildBook(bk||'R');$('book').classList.toggle('hidden',!bk);
   $('pad').hidden=!cfg.math;G.padH=cfg.math?$('pad').offsetHeight:0;
   $('roundTag').textContent=`Practice · Wand level ${G.wandLvl+1}`;practiceLevelUp(`Level ${G.wandLvl+1}!`);
+  const t=dueTutorial(cfg,G.pSeen);if(t)practiceTutorial(t);
 }
 // flight: every 35 seconds, faster and busier
 function flightPracticeNext(){
