@@ -96,11 +96,13 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-acti
 .board{background:#1d2b25;border:6px solid #7a4e2a;border-radius:12px;padding:8px 14px 10px;box-shadow:inset 0 0 24px rgba(0,0,0,.5),0 4px 0 rgba(0,0,0,.4);display:flex;flex-direction:column;align-items:center;gap:2px}
 .board small{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:rgba(246,239,255,.55);font-weight:600}
 .fline{font:700 34px/1.15 var(--body);letter-spacing:.06em;text-shadow:0 2px 0 rgba(0,0,0,.6);font-variant-numeric:tabular-nums}
-#cauldronSpot{flex:0 0 auto;height:min(24vh,170px)}
+#cauldronSpot{flex:0 0 auto;height:min(21vh,160px)}
+#tableSpace{flex:0 0 auto;height:min(15vw,64px)}
+#potion .pbtns .btn{padding:9px 20px;font-size:16px}
 #dropTally{display:flex;gap:4px;justify-content:center;flex-wrap:wrap;min-height:14px}
 #dropTally i{width:12px;height:12px;border-radius:50%;border:1.5px solid rgba(0,0,0,.5)}
 #shelf{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
-#shelf button{width:54px;height:66px;padding:0;background:rgba(36,23,63,.85);border:2px solid rgba(246,239,255,.2);border-radius:14px;cursor:pointer;touch-action:manipulation;box-shadow:0 4px 0 rgba(0,0,0,.45)}
+#shelf button{width:54px;height:66px;padding:0;background:rgba(20,10,4,.28);border:2px solid rgba(255,220,160,.22);border-radius:14px;cursor:pointer;touch-action:manipulation;box-shadow:0 4px 0 rgba(0,0,0,.45)}
 #shelf button:active{transform:translateY(3px);box-shadow:0 1px 0 rgba(0,0,0,.45)}
 #shelf button:focus-visible{outline:3px solid var(--yellow);outline-offset:2px}
 #shelf svg{width:40px;height:56px;display:block;margin:auto}
@@ -225,8 +227,9 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-acti
     <div class="board" id="recipe"></div>
     <div id="cauldronSpot"></div>
     <div id="dropTally" aria-live="polite"></div>
-    <div id="shelf"></div>
     <div class="pbtns"><button class="btn ghost" id="emptyBtn" type="button">Empty pot</button><button class="btn" id="brewBtn" type="button">Brew!</button></div>
+    <div id="shelf"></div>
+    <div id="tableSpace" aria-hidden="true"></div>
   </section>
 
   <div class="overlay" id="shopEnd" hidden>
@@ -1048,9 +1051,12 @@ function nextCustomer(){
 function measurePotion(){
   if($('potion').hidden)return;
   const rel=el=>{const r=el.getBoundingClientRect();return {x:r.left-cvRect.left,y:r.top-cvRect.top,w:r.width,h:r.height};};
-  PZ.rects={cust:rel($('custSpot')),pot:rel($('cauldronSpot'))};
+  PZ.rects={cust:rel($('custSpot')),pot:rel($('cauldronSpot')),shelf:rel($('shelf'))};
 }
 function renderTally(){$('dropTally').innerHTML=PZ.added.map(c=>`<i style="background:${CONFIG.colors[c].fill}"></i>`).join('');}
+// Stephen's potion workbench. standAt = how far down the picture the bottles stand (0 = top, 1 = bottom)
+const POTION_TABLE={src:'art/potion-table.png',standAt:0.5};
+const TABLE_IMG=new Image();let tableReady=false;TABLE_IMG.onload=()=>{tableReady=true;};TABLE_IMG.src=POTION_TABLE.src;
 // Stephen's cauldron art. liquid = where the brew sits in the picture (fractions of its width / height)
 const CAULDRON={src:'art/cauldron.png',liquid:{cx:0.503,cy:0.174,rx:0.296,ry:0.069}};
 const CAULDRON_IMG=new Image();let cauldronReady=false;CAULDRON_IMG.onload=()=>{cauldronReady=true;};CAULDRON_IMG.src=CAULDRON.src;
@@ -1126,13 +1132,17 @@ function mixColor(a){
 function renderPotion(){
   // shop wall, shelves of jars, a little window
   let g=ctx.createLinearGradient(0,0,0,H);g.addColorStop(0,'#2a1830');g.addColorStop(1,'#1a0f14');ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
-  ctx.fillStyle='#120a18';ctx.fillRect(0,H*0.82,W,H*0.18);
+  {const sh=PZ.rects&&PZ.rects.shelf,fy=sh&&tableReady?sh.y+sh.h-6+(Math.min(W-8,sh.w*1.25+120)*TABLE_IMG.height/TABLE_IMG.width)*(1-POTION_TABLE.standAt)-14:H*0.82;
+   ctx.fillStyle='#120a18';ctx.fillRect(0,fy,W,H-fy);}
   let seed=3;const rnd=()=>(seed=(seed*9301+49297)%233280)/233280;
   const jarCols=['#ff4a3d','#ffd23a','#4fe06a','#3d8bff','#a64dff','#ff9f1c'];
   [0.13,0.3].forEach(sy=>{const y=H*sy;ctx.fillStyle='#5a3620';ctx.fillRect(0,y,W,8);
     for(let x=10;x<W-20;x+=26+rnd()*18){if(rnd()<0.25)continue;const h=14+rnd()*16,w=10+rnd()*8;ctx.globalAlpha=0.55;
       ctx.fillStyle=jarCols[Math.floor(rnd()*jarCols.length)];ctx.fillRect(x,y-h*0.6,w,h*0.6);ctx.fillStyle='rgba(246,239,255,.35)';ctx.fillRect(x,y-h,w,h*0.4);ctx.globalAlpha=1;}});
   if(!PZ.rects||!PZ.cur)return;
+  // Stephen's potion workbench: the bottles stand on its top
+  if(tableReady&&PZ.rects.shelf){const sh=PZ.rects.shelf,T=POTION_TABLE,tw=Math.min(W-8,sh.w*1.25+120),th=tw*TABLE_IMG.height/TABLE_IMG.width;
+    ctx.save();ctx.imageSmoothingEnabled=false;ctx.drawImage(TABLE_IMG,(W-tw)/2,sh.y+sh.h-6-th*T.standAt,tw,th);ctx.restore();}
   // customer
   const cr=PZ.rects.cust, c=PZ.cur, R=Math.min(cr.h*0.28,cr.w*0.17);
   const ease=1-Math.pow(1-c.enter,3), cx=cr.x+cr.w/2-(1-ease)*cr.w*0.7, cy=cr.y+cr.h*0.42+Math.sin(G.clock*2)*2;
