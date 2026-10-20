@@ -1144,7 +1144,7 @@ function drawHat(type,x,y,R,col){
    ===================================================================== */
 const FLIGHT = {
   roundTime: 35, hearts: 5, zFar: 60,
-  xMax: 3.2, yMin: 0.6, yMax: 2.8, logY: 1.7,
+  xMax: 3.2, yMin: 0.6, yMax: 2.8,
   fireEvery: 0.26, shotSpeed: 44,
   /* magic gauge: each volley costs 1. Empty it and the wand overheats until it refills to `cool`.
      Every power-up star makes it bigger and refill faster. */
@@ -1157,7 +1157,7 @@ const FLIGHT = {
     { speed:11, trees:1.2, supplies:0.8, enemies:0.5, power:0.06, logs:0,    forks:0, shoot:true,  goal:30,
       intro:'Bats ahead! Hold the ZAP button to shoot sparks. Don\'t run your magic dry!' },
     { speed:12, trees:1.4, supplies:0.8, enemies:0.8, power:0.1,  logs:0.15, forks:0, shoot:true,  goal:34,
-      intro:'The forest is getting busy…' },
+      intro:'Fallen logs ahead! Fly high to get over them.' },
     { speed:13, trees:1.5, supplies:0.8, enemies:0.9, power:0.12, logs:0.2,  forks:1, shoot:true,  goal:38,
       intro:'The path splits up ahead…' },
     { speed:14, trees:1.6, supplies:0.8, enemies:1.1, wisps:0.3, power:0.12, logs:0.25, forks:2, shoot:true, goal:42,
@@ -1175,7 +1175,12 @@ const FLIGHT = {
   /* Stephen's hand-drawn forest tree. trunkX = where the trunk sits across the picture (0 = left edge, 1 = right).
      size = how tall it is in the world. sideShare = how many of the background side trees use it. */
   treeArt: { src:'art/forest-tree.png', trunkX:0.504, size:3.8, sideSize:6.5, sideShare:0.35 },
+  /* Stephen's fallen log lies across the path: fly HIGH to clear it.
+     width = how wide it is in the world. clear = how high you must fly over the middle; the upturned ends are taller. */
+  logArt: { src:'art/fallen-log.png', width:8.4, clear:1.45, endClear:1.95, endsAt:2.4 },
 };
+const LOG_IMG=new Image();let logReady=false;
+LOG_IMG.onload=()=>{logReady=true;};LOG_IMG.src=FLIGHT.logArt.src;
 const TREE_IMG=new Image();let treeReady=false;
 TREE_IMG.onload=()=>{treeReady=true;};TREE_IMG.src=FLIGHT.treeArt.src;
 const FL={};
@@ -1270,7 +1275,7 @@ function updateFlight(dt){
     if(pz>0&&o.z<=0){ // reached the witch
       const dx=Math.abs(o.x-FL.px),dy=Math.abs((o.y||0)-FL.py);
       if(o.kind==='tree'&&dx<0.55)flightHit();
-      else if(o.kind==='log'&&Math.abs(FL.py-FLIGHT.logY)<0.42)flightHit();
+      else if(o.kind==='log'){const L=FLIGHT.logArt;if(FL.py<(Math.abs(FL.px)>L.endsAt?L.endClear:L.clear))flightHit();}
       else if(o.kind==='fork'){
         if(Math.abs(FL.px)<0.75)flightHit();
         FL.biome=FL.px<0?o.left:o.right;FL.banner={text:biomeNow().name,t:2.2};Sfx.heal();}
@@ -1360,11 +1365,12 @@ function renderFlight(){
     for(let i=0;i<3;i++){ctx.fillStyle=i<FL.power?'#ffd23a':'rgba(246,239,255,.2)';ctx.save();ctx.translate(W-62+i*20,H-29);star(0,0,8);ctx.restore();}}
 }
 function drawFlightObj(o,b){
-  if(o.kind==='log'){const a=fproj(-7,FLIGHT.logY,o.z),c=fproj(7,FLIGHT.logY,o.z);if(!a)return;const th=0.36*a.k;
-    ctx.fillStyle=fogged('#5a3a22',o.z);ctx.beginPath();ctx.roundRect?ctx.roundRect(a.x,a.y-th/2,c.x-a.x,th,th/2):ctx.rect(a.x,a.y-th/2,c.x-a.x,th);ctx.fill();
-    ctx.fillStyle=fogged('#3f6b2a',o.z);for(let i=0;i<7;i++){const x=a.x+(c.x-a.x)*(i+0.5)/7;ctx.beginPath();ctx.ellipse(x,a.y-th*0.45,th*0.5,th*0.2,0,0,7);ctx.fill();}
-    [-1,1].forEach(d=>{const q=fproj(d*6.5,0,o.z),t=fproj(d*6.5,FLIGHT.logY,o.z);ctx.fillStyle=fogged('#3a2616',o.z);ctx.fillRect(q.x-th*0.4,t.y,th*0.8,q.y-t.y);});
-    return;}
+  if(o.kind==='log'){const L=FLIGHT.logArt,a=fproj(-L.width/2,0,o.z),c=fproj(L.width/2,0,o.z);if(!a)return;
+    const w=c.x-a.x,h=logReady?w*LOG_IMG.height/LOG_IMG.width:w/3.6,fogT=Math.max(0,Math.min(1,o.z/FLIGHT.zFar));
+    ctx.save();ctx.globalAlpha=Math.max(0.15,1-fogT*1.1);
+    if(logReady){ctx.imageSmoothingEnabled=false;ctx.drawImage(LOG_IMG,a.x,a.y-h,w,h);}
+    else{ctx.fillStyle=fogged('#5a3a22',o.z);ctx.fillRect(a.x,a.y-h*0.55,w,h*0.45);}
+    ctx.restore();return;}
   const q=fproj(o.x||0,o.kind==='tree'||o.kind==='deco'||o.kind==='fork'?0:o.y,o.z);if(!q||q.y<0)return;const k=q.k;
   if(o.art&&treeReady){const T=FLIGHT.treeArt,th=(o.kind==='tree'?T.size:T.sideSize)*k,tw=th*TREE_IMG.width/TREE_IMG.height;
     const fogT=Math.max(0,Math.min(1,o.z/FLIGHT.zFar));
