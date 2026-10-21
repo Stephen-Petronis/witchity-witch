@@ -6,6 +6,7 @@
 <style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}</style>
 </head>
 <body>
+<meta charset="utf-8">
 <title>Witchity Witch Witch Which Way Do I Go</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -199,6 +200,30 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-acti
 #fireBtn.hot span{color:var(--red)}
 #fireBtn:focus-visible{outline:3px solid var(--yellow);outline-offset:3px}
 @media (prefers-reduced-motion:reduce){.btn{transition:none}}
+
+/* school party */
+.ptabs{display:flex;gap:6px;width:100%}
+.ptab{flex:1;font-size:15px!important;padding:8px 4px!important;box-shadow:none!important;background:#e8d6ae!important;border:2px solid #7a4e2a!important;color:#4a2a10!important;border-radius:12px!important}
+.ptab.on{background:#ffd23a!important;color:#2a1608!important}
+.pbody{width:100%;display:flex;flex-direction:column;gap:4px;text-align:left}
+.pbody h3{margin:10px 0 2px;font-family:var(--display);font-weight:400;font-size:20px;color:#4a2a10}
+.pnote{margin:0 0 4px;font-size:13px;color:#4a2a10;font-weight:600}
+.prow{display:flex;align-items:center;gap:10px;padding:6px 2px;border-bottom:1px dashed rgba(122,78,42,.4);font-size:14px;font-weight:700;color:#2a1608}
+.prow .nm{flex:1;min-width:0}
+.prow small{display:block;font-weight:400;font-size:12px;color:#6a4a2a;margin-top:2px}
+.prow .sw{width:22px;height:22px;border-radius:50%;border:2px solid #4a2a10;flex:0 0 auto}
+.prow button,.pf button{font:700 13px var(--body);border:0;border-radius:10px;padding:8px 10px;background:#7a3fd1;color:#fff;cursor:pointer;white-space:nowrap}
+.prow button:disabled,.pf button:disabled{opacity:.45;cursor:default}
+.pfood{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;width:100%}
+.pf{display:flex;flex-direction:column;align-items:center;gap:4px;background:rgba(122,78,42,.12);border-radius:12px;padding:8px;font-size:13px;font-weight:700;color:#2a1608}
+.pf b{font-family:var(--display);font-size:22px;font-weight:400;color:#4a2a10}
+.pcards{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;width:100%}
+.pcard{display:flex;flex-direction:column;align-items:center;background:rgba(255,255,255,.5);border-radius:12px;padding:6px;font-size:13px;color:#2a1608}
+.pcard b{font-family:var(--display);font-weight:400;font-size:18px;color:#4a2a10}
+.pcard small{font-size:11px;color:#6a4a2a;text-align:center}
+.petsvg{width:86px;height:94px}
+.pfoot{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;flex-wrap:wrap}
+#partyWallet{font-size:13px;font-weight:700;color:#4a2a10;text-align:left}
 </style>
 
 <div id="stage">
@@ -287,6 +312,16 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-acti
       <p class="note" id="gradText"></p>
       <div class="talents" id="gradTalents"></div>
       <button class="btn" id="gradBtn" type="button">Start a new school year</button>
+    </div>
+  </div>
+
+  <div class="overlay" id="partyScreen" hidden>
+    <div class="paper">
+      <div class="term" id="partyTerm">Party time!</div>
+      <h2>School Party!</h2>
+      <div class="ptabs" id="partyTabs"></div>
+      <div class="pbody" id="partyBody"></div>
+      <div class="pfoot"><span id="partyWallet"></span><button class="btn" id="partyNext" type="button">Start the next term</button></div>
     </div>
   </div>
 
@@ -482,6 +517,37 @@ const Rec = (() => {
   const triUp=[0,1,2,0].map(i=>{const a=-PI/2+i*PI*2/3;return [0.5+0.5*Math.cos(a),0.5+0.5*Math.sin(a)];});
   const triDn=[0,1,2,0].map(i=>{const a=PI/2+i*PI*2/3;return [0.5+0.5*Math.cos(a),0.5+0.5*Math.sin(a)];});
   add('*',[triUp,triDn]);
+  // capital A-Z templates for the School Under Attack towers
+// capital letter templates A-Z for the alphabet event (added on top of the game's existing ones)
+(function(add,arc){
+  add('A',[[[0,1],[0.5,0],[1,1]],[[0.22,0.6],[0.78,0.6]]]);
+  add('A',[[[0,1],[0.5,0]],[[0.5,0],[1,1]],[[0.22,0.6],[0.78,0.6]]]);
+  // B, G, O, P, R, T, W, Y, Z already exist in the game
+  add('C',[arc(0.55,0.5,0.5,0.5,-PI*0.25,-PI*1.75,22)]);
+  add('D',[[[0,1],[0,0]],[[0,0],[0.4,0],...arc(0.4,0.5,0.55,0.5,-PI/2,PI/2,16),[0,1]]]);
+  add('D',[[[0,1],[0,0],[0.4,0],...arc(0.4,0.5,0.55,0.5,-PI/2,PI/2,16),[0,1]]]);
+  add('E',[[[1,0],[0,0],[0,1],[1,1]],[[0,0.5],[0.75,0.5]]]);
+  add('E',[[[0,0],[0,1]],[[0,0],[1,0]],[[0,0.5],[0.75,0.5]],[[0,1],[1,1]]]);
+  add('F',[[[1,0],[0,0],[0,1]],[[0,0.5],[0.75,0.5]]]);
+  add('F',[[[0,0],[0,1]],[[0,0],[1,0]],[[0,0.5],[0.75,0.5]]]);
+  add('H',[[[0,0],[0,1]],[[1,0],[1,1]],[[0,0.5],[1,0.5]]]);
+  add('I',[[[0.5,0],[0.5,1]],[[0.2,0],[0.8,0]],[[0.2,1],[0.8,1]]]);
+  add('I',[[[0.5,0],[0.5,1]]]);
+  add('J',[[[0.7,0],[0.7,0.75],...arc(0.4,0.75,0.3,0.25,0,PI,10)],[[0.35,0],[1,0]]]);
+  add('J',[[[0.7,0],[0.7,0.75],...arc(0.4,0.75,0.3,0.25,0,PI,10)]]);
+  add('K',[[[0,0],[0,1]],[[1,0],[0,0.55],[1,1]]]);
+  add('K',[[[0,0],[0,1]],[[1,0],[0,0.55]],[[0.3,0.4],[1,1]]]);
+  add('L',[[[0,0],[0,1],[0.8,1]]]);
+  add('M',[[[0,1],[0,0],[0.5,0.6],[1,0],[1,1]]]);
+  add('M',[[[0,1],[0.1,0],[0.5,0.7],[0.9,0],[1,1]]]);
+  add('N',[[[0,1],[0,0],[1,1],[1,0]]]);
+  add('N',[[[0,1],[0,0]],[[0,0],[1,1]],[[1,1],[1,0]]]);
+  add('Q',[arc(0.5,0.48,0.5,0.48,-PI/2,PI*1.5,24),[[0.55,0.7],[1,1]]]);
+  add('S',[[...arc(0.5,0.27,0.45,0.25,-PI*0.15,-PI*1.5,12),...arc(0.5,0.73,0.45,0.25,-PI/2,PI*0.85,12)]]);
+  add('U',[[[0,0],[0,0.6],...arc(0.5,0.6,0.5,0.4,PI,0,14),[1,0]]]);
+  add('V',[[[0,0],[0.5,1],[1,0]]]);
+  add('X',[[[0,0],[1,1]],[[1,0],[0,1]]]);
+})(add,arc);
   // returns letters ranked best-first: [{name,dist},...] (only letters in `allowed`)
   function recognize(raw,allowed){if(raw.length<6)return null;const c=norm(raw),per={};
     for(const t of T){if(allowed&&!allowed.includes(t.name))continue;const d=match(c,t.pts);if(!(t.name in per)||d<per[t.name])per[t.name]=d;}
@@ -545,8 +611,8 @@ function roundCfg(i){
 }
 /* ---------- saved progress (this browser only) ---------- */
 const SAVE_KEY='witchity-progress';
-function loadProgress(){try{const d=JSON.parse(localStorage.getItem(SAVE_KEY)||'{}');G.wandLvl=d.wand|0;G.potionLvl=d.potion|0;G.flightLvl=d.flight|0;G.mushLvl=d.mush|0;G.stash=d.stash|0;if(d.seen)G.seen=d.seen;if(d.school)G.school={term:d.school.term||1,history:d.school.history||{}};if(d.term)G.termRec=d.term;if(d.book)G.book={pieces:d.book.pieces|0,fixed:d.book.fixed|0,lv:{...G.book.lv,...(d.book.lv||{})}};G.team=d.team||[];G.flock=d.flock||[];}catch(e){}}
-function saveProgress(){if(G.practice)return;try{localStorage.setItem(SAVE_KEY,JSON.stringify({wand:G.wandLvl,potion:G.potionLvl,flight:G.flightLvl,mush:G.mushLvl,book:G.book,school:G.school,term:G.termRec,seen:G.seen,stash:G.stash||0,team:G.team,flock:G.flock}));}catch(e){}}
+function loadProgress(){try{const d=JSON.parse(localStorage.getItem(SAVE_KEY)||'{}');G.wandLvl=d.wand|0;G.potionLvl=d.potion|0;G.flightLvl=d.flight|0;G.mushLvl=d.mush|0;G.stash=d.stash|0;G.keep=mergeKeep(d.keep);if(d.seen)G.seen=d.seen;if(d.school)G.school={term:d.school.term||1,history:d.school.history||{}};if(d.term)G.termRec=d.term;if(d.book)G.book={pieces:d.book.pieces|0,fixed:d.book.fixed|0,lv:{...G.book.lv,...(d.book.lv||{})}};G.team=d.team||[];G.flock=d.flock||[];}catch(e){}}
+function saveProgress(){if(G.practice)return;try{localStorage.setItem(SAVE_KEY,JSON.stringify({wand:G.wandLvl,potion:G.potionLvl,flight:G.flightLvl,mush:G.mushLvl,book:G.book,school:G.school,term:G.termRec,seen:G.seen,stash:G.stash||0,team:G.team,flock:G.flock,keep:G.keep}));}catch(e){}}
 function starsToMove(stars){return stars===3?1:stars===1?-1:0;}
 function levelMsg(stars,newLvl,what){
   return stars===3?`Level up! ${what} level ${newLvl+1} next time.`:stars===2?`Nice! Let's try ${what} level ${newLvl+1} again.`:`Let's practice ${what} level ${newLvl+1} next time.`;
@@ -810,7 +876,7 @@ function drawHand(){
   const b=handBase(),a=wandAngle(),L=wandLen(),s=L*0.2;
   ctx.save();ctx.translate(b.x,b.y+G.recoil*10);ctx.rotate(a+PI/2);
   // sleeve
-  ctx.fillStyle='#4b2a78';ctx.beginPath();ctx.moveTo(-s*0.75,s*0.55);ctx.lineTo(-s*1.3,s*3.2);ctx.lineTo(s*1.3,s*3.2);ctx.lineTo(s*0.75,s*0.55);ctx.closePath();ctx.fill();
+  ctx.fillStyle=wearOpt('robe').c;ctx.beginPath();ctx.moveTo(-s*0.75,s*0.55);ctx.lineTo(-s*1.3,s*3.2);ctx.lineTo(s*1.3,s*3.2);ctx.lineTo(s*0.75,s*0.55);ctx.closePath();ctx.fill();
   ctx.fillStyle='#ffd23a';[[-.3,1.3],[.4,2],[-.6,2.5],[.2,2.9]].forEach(([x,y])=>star(x*s,y*s,s*0.12));
   ctx.fillStyle='#2f1a50';ctx.beginPath();ctx.moveTo(-s*0.85,s*0.55);for(let i=0;i<=6;i++){const x=-s*0.85+i*s*0.283;ctx.lineTo(x,s*(i%2?0.78:0.5));}ctx.lineTo(s*0.85,s*0.95);ctx.lineTo(-s*0.85,s*0.95);ctx.fill();
   // wand (twisty stick)
@@ -827,7 +893,7 @@ function drawHand(){
   ctx.fillStyle='#5f9a37';ctx.beginPath();ctx.arc(-s*0.2,s*0.48,s*0.06,0,7);ctx.fill();              // wart
   ctx.restore();
   // glowing tip
-  const t=wandTip(),c=G.wandColor?colorOf(G.wandColor).glow:'rgba(214,170,255,';
+  const t=wandTip(),c=wearOpt('wand').glow;
   const pulse=1+Math.sin(G.clock*6)*0.15+G.recoil;
   const gr=ctx.createRadialGradient(t.x,t.y,0,t.x,t.y,s*0.9*pulse);gr.addColorStop(0,c+'.95)');gr.addColorStop(0.3,c+'.45)');gr.addColorStop(1,c+'0)');
   ctx.fillStyle=gr;ctx.beginPath();ctx.arc(t.x,t.y,s*0.9*pulse,0,7);ctx.fill();
@@ -838,10 +904,10 @@ function star(x,y,r){ctx.beginPath();for(let i=0;i<10;i++){const a=-PI/2+i*PI/5,
 /* ---------- tracing ---------- */
 let cvRect={left:0,top:0};
 const toCanvas=e=>({x:e.clientX-cvRect.left,y:e.clientY-cvRect.top});
-['touchstart','touchmove'].forEach(t=>cv.addEventListener(t,e=>{if(G.state==='play'||G.state==='fly')e.preventDefault();},{passive:false}));
+['touchstart','touchmove'].forEach(t=>cv.addEventListener(t,e=>{if(G.state==='play'||G.state==='fly'||G.state==='tower'||G.state==='siege')e.preventDefault();},{passive:false}));
 function allPoints(){const pts=[];G.strokes.forEach((s,id)=>s.forEach(p=>pts.push(Rec.P(p.x,p.y,id))));return pts;}
 cv.addEventListener('pointerdown',e=>{
-  if(G.state!=='play')return; e.preventDefault(); cv.setPointerCapture(e.pointerId);
+  if(G.state!=='play'&&G.state!=='tower')return; e.preventDefault(); cv.setPointerCapture(e.pointerId);
   cvRect=cv.getBoundingClientRect(); const q=toCanvas(e); G.strokeTimer=-1; G.curStroke=[q]; G.strokes.push(G.curStroke); G.wandAim=q;
 });
 cv.addEventListener('pointermove',e=>{
@@ -857,6 +923,7 @@ function readSpell(){
   const pts=allPoints(); const strokes=G.strokes; G.strokes=[];
   let a=1e9,b=1e9,c=-1e9,d=-1e9;for(const p of pts){a=Math.min(a,p.x);b=Math.min(b,p.y);c=Math.max(c,p.x);d=Math.max(d,p.y);}
   if(Math.max(c-a,d-b)<CONFIG.minTraceSize||pts.length<6)return;
+  if(G.state==='tower'){towerRead(pts,strokes,(a+c)/2,(b+d)/2);return;}
   const cfg=roundCfg(G.wandLvl);
   const allowed=cfg.colors.split('');
   if(cfg.cases)allowed.push(...cfg.colors.toLowerCase().split('').filter(l=>!CONFIG.caseFree.includes(l.toUpperCase())));
@@ -947,7 +1014,7 @@ function endRound(won){
 function updateHud(){ updateSpellBar(); $('timer').textContent=Math.ceil(Math.max(0,G.time)); $('timer').classList.toggle('low',G.time<=5); $('score').textContent=`${G.zaps} zapped`; }
 
 $('startBtn').onclick=()=>{Sfx.init();G.score=0;showIntro();};
-$('resetBtn').onclick=()=>{G.wandLvl=0;G.potionLvl=0;G.flightLvl=0;G.mushLvl=0;G.stash=0;G.book={pieces:0,fixed:0,lv:{star:0,lantern:0,broom:0,rainbow:0}};G.starCharge=0;G.school={term:1,history:{}};G.termRec={};G.seen={};G.team=[];G.flock=[];saveProgress();showProgressLine();};
+$('resetBtn').onclick=()=>{G.keep=keepDefault();G.wandLvl=0;G.potionLvl=0;G.flightLvl=0;G.mushLvl=0;G.stash=0;G.book={pieces:0,fixed:0,lv:{star:0,lantern:0,broom:0,rainbow:0}};G.starCharge=0;G.school={term:1,history:{}};G.termRec={};G.seen={};G.team=[];G.flock=[];saveProgress();showProgressLine();};
 $('goBtn').onclick=()=>(G.introGo||startRound)();
 $('nextBtn').onclick=()=>(G.afterEnd||startPotion)();
 $('mute').onclick=()=>{const m=Sfx.toggle();$('mute').textContent=m?'×':'♪';};
@@ -1232,6 +1299,7 @@ const FLIGHT = {
     mushroom: { name:'Mushroom Hollow', sky:['#170b24','#43205a'], ground:['#1a0f24','#2a1838'], path:'#3a2440', fog:[70,36,96],  tree:'#2a1240', sup:1.8, foe:0.6, pow:1   },
     bats:     { name:'Bat Caves',       sky:['#140808','#3e1414'], ground:['#140c0c','#261616'], path:'#33201c', fog:[70,24,24],  tree:'#2a0e0e', sup:0.7, foe:1.8, pow:2   },
     firefly:  { name:'Firefly Glen',    sky:['#09160e','#24401c'], ground:['#0d1a0f','#1a2e18'], path:'#33331f', fog:[40,70,40],  tree:'#123018', sup:1.3, foe:0.9, pow:1.5 },
+    castle:{name:'Castle Walls',sky:['#1b1433','#3a2a5a'],ground:['#1a1a22','#2a2a33'],path:'#3a3a44',fog:[70,60,90],tree:'#222',sup:0,foe:0,pow:0},
   },
   supplyKinds: ['mushroom','moonflower','feather','starberry'],
   /* Stephen's hand-drawn forest trees. Each tree you dodge (and each side tree) picks one at random.
@@ -1263,7 +1331,7 @@ function showFlightIntro(){clearFx();$('introDemo').hidden=true;$('goBtn').textC
 }
 function startFlight(){clearFx();
   const cfg=flightCfg(G.flightLvl);
-  Object.assign(FL,{t:FLIGHT.roundTime,dist:0,px:0,py:1.5,tx:0,ty:1.5,bank:0,objs:[],deco:[],shots:[],score:0,supplies:0,zaps:0,hits:0,
+  Object.assign(FL,{t:FLIGHT.roundTime,dist:0,px:0,py:1.5,tx:0,ty:1.5,bank:0,objs:[],deco:[],shots:[],score:0,supplies:0,food:{},zaps:0,hits:0,
     hearts:FLIGHT.hearts,power:0,fireT:0,holding:false,firing:false,overheat:false,mana:FLIGHT.mana.base,last:null,invuln:0,biome:'pine',acc:{},forkAt:[],banner:null});
   for(let i=1;i<=cfg.forks;i++)FL.forkAt.push(FLIGHT.roundTime*(1-i/(cfg.forks+1)));   // times left when a fork appears
   // pre-fill the side forest so it isn't empty at the start
@@ -1302,7 +1370,7 @@ function spawnFlight(cfg,dt){
   for(let i=tick('page',SPELLBOOK.forestPageRate);i>0;i--)add({kind:'page',x:frand(-2.6,2.6),y:frand(1,2.4),z:Z});
   if(cfg.logs&&!nearFork)for(let i=tick('log',cfg.logs);i>0;i--)add({kind:'log',z:Z});
   if(FL.forkAt.length&&FL.t<=FL.forkAt[0]){FL.forkAt.shift();
-    const opts=Object.keys(FLIGHT.biomes).filter(k=>k!==FL.biome).sort(()=>Math.random()-.5);
+    const opts=Object.keys(FLIGHT.biomes).filter(k=>k!==FL.biome&&k!=='castle').sort(()=>Math.random()-.5);
     FL.objs=FL.objs.filter(o=>!(o.kind==='tree'&&o.z>Z-12&&Math.abs(o.x)<1.6));
     add({kind:'fork',z:Z,left:opts[0],right:opts[1]});}
 }
@@ -1319,9 +1387,9 @@ function updateFlight(dt){
   FL.t-=dt;if(FL.t<=0){if(G.practice)flightPracticeNext();else{FL.t=0;updateFlightHud();endFlight(false);return;}}
   FL.invuln=Math.max(0,FL.invuln-dt);
   // steering
-  const kx=Math.min(1,dt*(spellLv('broom')?10:7));FL.bank+=((FL.tx-FL.px)-FL.bank)*Math.min(1,dt*6);
+  const kx=Math.min(1,dt*(spellLv('broom')?10:7)*(1+0.2*workLv('acc')));FL.bank+=((FL.tx-FL.px)-FL.bank)*Math.min(1,dt*6);
   FL.px+=(FL.tx-FL.px)*kx;FL.py+=(FL.ty-FL.py)*kx;
-  const v=cfg.speed;FL.dist+=v*dt;
+  const v=cfg.speed*(1+0.08*workLv('speed'));FL.dist+=v*dt;
   spawnFlight(cfg,dt);
   for(const d of FL.deco)d.z-=v*dt;FL.deco=FL.deco.filter(d=>d.z>-1);
   // shooting
@@ -1331,7 +1399,7 @@ function updateFlight(dt){
   if(FL.overheat&&FL.mana>=max*M.cool)FL.overheat=false;
   if(cfg.shoot&&FL.firing&&!FL.overheat&&FL.mana<1){FL.overheat=true;Sfx.fizzle();floatText('Out of magic!',W/2,H*0.62,'#ff4a3d');}
   if(cfg.shoot&&FL.firing&&!FL.overheat&&FL.mana>=1&&FL.fireT<=0){FL.fireT=FLIGHT.fireEvery;FL.mana-=1;Sfx.spark();
-    const p=FL.power,mk=(dx,vx)=>FL.shots.push({x:FL.px+dx,y:FL.py+0.15,z:0.6,vx,r:p>=3?0.55:0.3});
+    const p=FL.power,mk=(dx,vx)=>FL.shots.push({x:FL.px+dx,y:FL.py+0.15,z:0.6,vx,r:(p>=3?0.55:0.3)+0.08*workLv('flight')});
     if(p===0)mk(0,0);else if(p===1){mk(-0.25,0);mk(0.25,0);}else{mk(0,0);mk(-0.15,-3.2);mk(0.15,3.2);}}
   for(const s of FL.shots){s.z+=FLIGHT.shotSpeed*dt;s.x+=s.vx*dt;}
   if(spellLv('broom'))for(const o of FL.objs)if((o.kind==='supply'||o.kind==='page')&&o.z<7&&o.z>0&&Math.abs(o.x-FL.px)<1.8){o.x+=(FL.px-o.x)*dt*4;o.y+=(FL.py-o.y)*dt*4;}   // Swift Broom magnet
@@ -1352,7 +1420,7 @@ function updateFlight(dt){
       else if(o.kind==='fork'){
         if(Math.abs(FL.px)<0.75)flightHit();
         FL.biome=FL.px<0?o.left:o.right;FL.banner={text:biomeNow().name,t:2.2};Sfx.heal();}
-      else if(o.kind==='supply'&&!o.got&&dx<0.75&&dy<0.75){o.got=true;FL.score++;FL.supplies++;Sfx.plip();
+      else if(o.kind==='supply'&&!o.got&&dx<0.75+0.15*workLv('acc')&&dy<0.75+0.15*workLv('acc')){o.got=true;FL.score++;FL.supplies++;FL.food[o.sub]=(FL.food[o.sub]||0)+1;Sfx.plip();
         const q=fproj(o.x,o.y,0.2);if(q)burst(q.x,q.y,'rgba(255,236,170,',10,40);}
       else if(o.kind==='page'&&!o.got&&dx<0.85&&dy<0.85){o.got=true;FL.pages++;Sfx.heal();floatText('Spellbook piece!',W/2,H*0.35,'#ffd23a',true);}
       else if(o.kind==='power'&&!o.got&&dx<0.85&&dy<0.85){o.got=true;FL.power=Math.min(3,FL.power+1);FL.mana=manaMax();FL.overheat=false;Sfx.heal();
@@ -1366,7 +1434,7 @@ function updateFlight(dt){
   if(FL.biome==='firefly'&&Math.random()<0.3)G.parts.push({x:Math.random()*W,y:H*0.3+Math.random()*H*0.5,vx:frand(-10,10),vy:frand(-15,-5),life:1.5,max:1.5,c:'rgba(230,255,120,',r:2,float:true});
   updateFlightHud();updateFireBtn();
 }
-function manaMax(){return FLIGHT.mana.base+FLIGHT.mana.perPower*FL.power;}
+function manaMax(){return FLIGHT.mana.base+FLIGHT.mana.perPower*FL.power+2*workLv('flight');}
 function updateFireBtn(){const b=$('fireBtn');if(b.hidden)return;
   b.style.setProperty('--mana',Math.max(0,Math.min(1,FL.mana/manaMax())).toFixed(3));b.classList.toggle('hot',FL.overheat);b.classList.toggle('firing',FL.firing&&!FL.overheat);
   $('fireLbl').textContent=FL.overheat?'…':'ZAP';}
@@ -1384,19 +1452,19 @@ function endFlight(crashed){
   const stars=crashed?1:(FL.score>=cfg.goal&&FL.hits<=1)?3:(FL.score>=Math.ceil(cfg.goal*0.6))?2:1;
   recordGrade('flight',stars,FL.score/cfg.goal,`${FL.score} points, ${FL.hits} bump${FL.hits===1?'':'s'}`);
   $('endStars').innerHTML=starHTML(stars);
-  G.flightLvl=Math.max(0,G.flightLvl+starsToMove(stars));G.stash=(G.stash||0)+FL.supplies;
+  G.flightLvl=Math.max(0,G.flightLvl+starsToMove(stars));G.stash=(G.stash||0)+FL.supplies;for(const f in FL.food)earn('food',FL.food[f],f);
   $('endLevel').textContent=`${FL.supplies} supplies gathered. `+levelMsg(stars,G.flightLvl,'flight')+awardPieces(SPELLBOOK.piecesFor(stars)+FL.pages);
   $('nextBtn').textContent='To the mushroom patch';G.afterEnd=showMushIntro;
   saveProgress();
 }
 
 /* ---------- input: drag to steer, hold to shoot ---------- */
-cv.addEventListener('pointerdown',e=>{if(G.state!=='fly')return;e.preventDefault();cv.setPointerCapture(e.pointerId);cvRect=cv.getBoundingClientRect();FL.holding=true;FL.steerId=e.pointerId;FL.last=toCanvas(e);});
-cv.addEventListener('pointermove',e=>{if(G.state!=='fly'||!FL.holding||!FL.last||e.pointerId!==FL.steerId)return;const q=toCanvas(e);
+cv.addEventListener('pointerdown',e=>{if(G.state!=='fly'&&G.state!=='siege')return;e.preventDefault();cv.setPointerCapture(e.pointerId);cvRect=cv.getBoundingClientRect();FL.holding=true;FL.steerId=e.pointerId;FL.last=toCanvas(e);});
+cv.addEventListener('pointermove',e=>{if((G.state!=='fly'&&G.state!=='siege')||!FL.holding||!FL.last||e.pointerId!==FL.steerId)return;const q=toCanvas(e);
   FL.tx=Math.max(-FLIGHT.xMax,Math.min(FLIGHT.xMax,FL.tx+(q.x-FL.last.x)*(2*FLIGHT.xMax)/(W*0.7)));
   FL.ty=Math.max(FLIGHT.yMin,Math.min(FLIGHT.yMax,FL.ty-(q.y-FL.last.y)*(FLIGHT.yMax-FLIGHT.yMin)/(H*0.35)));FL.last=q;});
-['pointerup','pointercancel'].forEach(t=>cv.addEventListener(t,e=>{if(G.state==='fly'&&e.pointerId===FL.steerId){FL.holding=false;FL.last=null;}}));
-document.addEventListener('keydown',e=>{if(G.state!=='fly')return;const k=e.key;
+['pointerup','pointercancel'].forEach(t=>cv.addEventListener(t,e=>{if((G.state==='fly'||G.state==='siege')&&e.pointerId===FL.steerId){FL.holding=false;FL.last=null;}}));
+document.addEventListener('keydown',e=>{if(G.state!=='fly'&&G.state!=='siege')return;const k=e.key;
   if(k==='ArrowLeft')FL.tx=Math.max(-FLIGHT.xMax,FL.tx-0.6);if(k==='ArrowRight')FL.tx=Math.min(FLIGHT.xMax,FL.tx+0.6);
   if(k==='ArrowUp')FL.ty=Math.min(FLIGHT.yMax,FL.ty+0.4);if(k==='ArrowDown')FL.ty=Math.max(FLIGHT.yMin,FL.ty-0.4);if(k===' '){e.preventDefault();FL.firing=true;}});
 document.addEventListener('keyup',e=>{if(G.state==='fly'&&e.key===' ')FL.firing=false;});
@@ -1438,6 +1506,7 @@ function renderFlight(){
     for(let i=0;i<3;i++){ctx.fillStyle=i<FL.power?'#ffd23a':'rgba(246,239,255,.2)';ctx.save();ctx.translate(W-62+i*20,H-29);star(0,0,8);ctx.restore();}}
 }
 function drawFlightObj(o,b){
+  if(o.kind==='wall'){drawWall(o);return;}
   if(o.kind==='stump'){const S=FLIGHT.stumpArt,q=fproj(o.x,0,o.z);if(!q)return;const w=S.width*q.k,h=stumpReady?w*STUMP_IMG.height/STUMP_IMG.width:w*0.6,fogT=Math.max(0,Math.min(1,o.z/FLIGHT.zFar));
     ctx.save();ctx.globalAlpha=Math.max(0.15,1-fogT*1.1);ctx.translate(q.x,q.y);if(o.flip)ctx.scale(-1,1);
     if(stumpReady){ctx.imageSmoothingEnabled=false;ctx.drawImage(STUMP_IMG,-w/2,-h,w,h);}else{ctx.fillStyle=fogged('#5a3a22',o.z);ctx.fillRect(-w*0.3,-h*0.8,w*0.6,h*0.8);}
@@ -1498,22 +1567,22 @@ function drawBroomWitch(){
   ctx.save();ctx.translate(q.x,q.y+Math.sin(G.clock*3)*u*0.03);ctx.rotate(-FL.bank*0.18);
   // broom stick heading away from us, bristles near us
   ctx.strokeStyle='#8a5a30';ctx.lineWidth=u*0.08;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(0,u*0.3);ctx.lineTo(0,-u*0.55);ctx.stroke();
-  ctx.fillStyle='#d9a441';ctx.beginPath();ctx.moveTo(-u*0.1,u*0.25);ctx.lineTo(-u*0.42,u*0.7);ctx.quadraticCurveTo(0,u*0.82,u*0.42,u*0.7);ctx.lineTo(u*0.1,u*0.25);ctx.fill();
+  ctx.fillStyle=wearOpt('broom').c;ctx.beginPath();ctx.moveTo(-u*0.1,u*0.25);ctx.lineTo(-u*0.42,u*0.7);ctx.quadraticCurveTo(0,u*0.82,u*0.42,u*0.7);ctx.lineTo(u*0.1,u*0.25);ctx.fill();
   ctx.strokeStyle='#a87a26';ctx.lineWidth=Math.max(1,u*0.02);for(let i=-3;i<=3;i++){ctx.beginPath();ctx.moveTo(i*u*0.03,u*0.3);ctx.lineTo(i*u*0.12,u*0.74);ctx.stroke();}
   ctx.fillStyle='#6b4423';ctx.fillRect(-u*0.12,u*0.2,u*0.24,u*0.08);
   // cape flapping
   const fl=Math.sin(G.clock*10)*u*0.06;ctx.fillStyle='#2f1a50';
   ctx.beginPath();ctx.moveTo(-u*0.25,-u*0.25);ctx.quadraticCurveTo(-u*0.55,u*0.1,-u*0.45+fl,u*0.42);ctx.lineTo(u*0.45-fl,u*0.42);ctx.quadraticCurveTo(u*0.55,u*0.1,u*0.25,-u*0.25);ctx.fill();
   // dress and arms
-  ctx.fillStyle='#4b2a78';ctx.beginPath();ctx.ellipse(0,0,u*0.27,u*0.3,0,0,7);ctx.fill();
+  ctx.fillStyle=wearOpt('robe').c;ctx.beginPath();ctx.ellipse(0,0,u*0.27,u*0.3,0,0,7);ctx.fill();
   ctx.fillStyle='#7fbf4d';[-1,1].forEach(d=>{ctx.beginPath();ctx.arc(d*u*0.07,-u*0.3,u*0.06,0,7);ctx.fill();});
   // head + hair from behind
   ctx.fillStyle='#ff8a1c';ctx.beginPath();ctx.arc(0,-u*0.36,u*0.17,0,7);ctx.fill();
   ctx.strokeStyle='#ff8a1c';ctx.lineWidth=u*0.05;[-1,1].forEach(d=>{ctx.beginPath();ctx.moveTo(d*u*0.12,-u*0.3);ctx.quadraticCurveTo(d*u*0.3,-u*0.1+fl,d*u*0.22,u*0.02);ctx.stroke();});
   // pointy hat
-  ctx.fillStyle='#1d1033';ctx.beginPath();ctx.ellipse(0,-u*0.45,u*0.36,u*0.09,0,0,7);ctx.fill();
+  ctx.fillStyle=wearOpt('hat').c;ctx.beginPath();ctx.ellipse(0,-u*0.45,u*0.36,u*0.09,0,0,7);ctx.fill();
   ctx.beginPath();ctx.moveTo(-u*0.18,-u*0.47);ctx.quadraticCurveTo(-u*0.05,-u*0.85,u*0.18-fl*2,-u*1.05);ctx.quadraticCurveTo(u*0.05,-u*0.8,u*0.18,-u*0.47);ctx.fill();
-  ctx.fillStyle='#a64dff';ctx.fillRect(-u*0.17,-u*0.55,u*0.34,u*0.06);
+  ctx.fillStyle=wearOpt('hat').band;ctx.fillRect(-u*0.17,-u*0.55,u*0.34,u*0.06);
   // wand glow when casting
   if(FL.firing&&!FL.overheat&&flightCfg(G.flightLvl).shoot){ctx.fillStyle='rgba(255,236,170,.9)';ctx.save();ctx.translate(u*0.12,-u*0.4);ctx.rotate(G.clock*6);star(0,0,u*0.07);ctx.restore();}
   ctx.restore();
@@ -1613,6 +1682,7 @@ function nextPick(){
 function pickCell(i,b){
   if(G.state!=='mush'||MZ.lock)return;
   if(i===MZ.answer){MZ.lock=true;b.classList.add('right');Sfx.pop();MZ.good++;MZ.streak++;
+    {const c=MZ.target.color||'R';earn('mat',1,c);if(!G.practice&&MATS[c])floatText('+1 '+MATS[c].name,W/2,H*0.2,CONFIG.colors[c]?CONFIG.colors[c].fill:'#fff');}
     const basket=$('mBasket');basket.insertAdjacentHTML('beforeend',mushSVG(MZ.target));while(basket.children&&basket.children.length>12)basket.removeChild(basket.firstChild);
     if(MZ.streak>=MUSH.stagePicks&&MZ.stage<MUSH.stages.length-1){MZ.stage++;MZ.streak=0;}
     setTimeout(()=>{if(G.state==='mush')nextPick();},350);}
@@ -1857,7 +1927,7 @@ const SCHOOL = {
 G.school={term:1,history:{}};G.termRec={};
 // grade from stars, nudged up by how far past the goal you got
 function gradeFor(stars,ratio){return stars===3?(ratio>=1.4?'A+':'A'):stars===2?(ratio>=0.85?'B+':'B'):(ratio>=0.4?'C+':'C');}
-function recordGrade(id,stars,ratio,detail){G.termRec[id]={stars,grade:gradeFor(stars,ratio),detail};}
+function recordGrade(id,stars,ratio,detail){G.termRec[id]={stars,grade:gradeFor(stars,ratio),detail};earn('coins',stars*3);}
 
 function showReport(){
   clearFx();G.state='report';
@@ -1892,7 +1962,7 @@ function showGraduation(){
   $('gradTalents').innerHTML=SCHOOL.subjects.filter(s=>avg[s.id]!==undefined).map(s=>`<div>${s.name}<i><b style="width:${Math.round(avg[s.id]/4.3*100)}%"></b></i><span>${letterFor(avg[s.id])}</span></div>`).join('');
   $('gradScreen').hidden=false;Sfx.heal();setTimeout(()=>Sfx.roundEnd(),500);
 }
-$('rcBtn').onclick=()=>{$('reportScreen').hidden=true;if(G.school.term>SCHOOL.terms)showGraduation();else showIntro();};
+$('rcBtn').onclick=()=>{$('reportScreen').hidden=true;if(G.school.term>SCHOOL.terms)showGraduation();else showParty();};
 $('gradBtn').onclick=()=>{$('gradScreen').hidden=true;G.school={term:1,history:{}};saveProgress();showIntro();};
 
 /* =====================================================================
@@ -1943,7 +2013,7 @@ const PRACTICE = {
   ],
   potionStreak: 3,   // healed in a row to level up
 };
-const ALL_SCREENS=['hud','pad','fireBtn','potion','shopEnd','mush','sbook','spellCard','endScreen','introScreen','reportScreen','gradScreen','practiceScreen','titleScreen'];
+const ALL_SCREENS=['hud','pad','fireBtn','potion','shopEnd','mush','sbook','spellCard','endScreen','introScreen','reportScreen','gradScreen','practiceScreen','titleScreen','partyScreen'];
 function hideAllScreens(){ALL_SCREENS.forEach(id=>{const e=$(id);if(e)e.hidden=true;});}
 function showPracticeMenu(){hideAllScreens();G.state='title';$('practiceScreen').hidden=false;}
 function enterPractice(id){
@@ -1980,6 +2050,250 @@ $('menuBtn').addEventListener('click',exitPractice);
 $('practiceList').innerHTML=PRACTICE.games.map(g=>`<button type="button" class="btn pgame" id="practice-${g.id}">${g.name}</button>`).join('');
 PRACTICE.games.forEach(g=>$('practice-'+g.id).addEventListener('click',()=>enterPractice(g.id)));
 
+/* =====================================================================
+   THE SCHOOL PARTY — after every report card. Every game pays coins,
+   flying gathers forest food, and mushroom picking finds magic materials.
+   Coins and materials buy wardrobe looks and workshop upgrades; food fills
+   the Pet Nest. Every third term the castle is under attack!
+   ===================================================================== */
+const MATS={R:{name:'Ember Dust'},Y:{name:'Sun Spore'},G:{name:'Moss Gel'},B:{name:'Frost Pearl'},P:{name:'Glow Petal'},O:{name:'Amber Resin'},W:{name:'Moon Pearl'},T:{name:'Teal Fern'}};
+const FOOD={
+  mushroom:  {name:'Mushroom',   hue:340, body:'Puffcap',     desc:'round and spotty'},
+  moonflower:{name:'Moonflower', hue:270, body:'Glowmoth',    desc:'floaty, with glowing wings'},
+  feather:   {name:'Feather',    hue:190, body:'Featherbird', desc:'with a swishy feather tail'},
+  starberry: {name:'Starberry',  hue:50,  body:'Sparkspike',  desc:'spiky, with a star crown'},
+};
+// wardrobe: three looks per slot, the first one is free and already owned
+const WEAR={
+  hat:  {label:'Hat',  opts:[{name:'Pointy Hat',c:'#1d1033',band:'#a64dff',cost:0},{name:'Moon Hat',c:'#1e3a6e',band:'#ffd23a',cost:4},{name:'Leafy Hat',c:'#1f5a34',band:'#ff8a1c',cost:8}]},
+  robe: {label:'Robe', opts:[{name:'Purple Robe',c:'#4b2a78',cost:0},{name:'Forest Robe',c:'#1f5a34',cost:5},{name:'Star Night Robe',c:'#1a1d4a',cost:10}]},
+  wand: {label:'Wand', opts:[{name:'Twig Wand',glow:'rgba(214,170,255,',tip:'#d6aaff',cost:0},{name:'Gold Wand',glow:'rgba(255,210,58,',tip:'#ffd23a',cost:5},{name:'Crystal Wand',glow:'rgba(25,211,197,',tip:'#19d3c5',cost:10}]},
+  broom:{label:'Broom',opts:[{name:'Straw Broom',c:'#d9a441',cost:0},{name:'Sky Broom',c:'#5aa9e6',cost:5},{name:'Rose Broom',c:'#e87aa8',cost:10}]},
+};
+// workshop: each level costs 3+3 per level coins and (level+1) of one material
+const WORK=[
+  {id:'wand',  name:'Wand Power',     mat:'Y', what:'Every zap charges your Star Wand faster.'},
+  {id:'speed', name:'Broom Speed',    mat:'G', what:'Fly faster through the Dark Forest.'},
+  {id:'acc',   name:'Broom Accuracy', mat:'B', what:'Grab supplies from farther away, and steer snappier.'},
+  {id:'flight',name:'Flight Wand',    mat:'P', what:'Stronger ZAP sparks and a bigger magic gauge in the forest.'},
+];
+const WORK_MAX=3;
+const PET_SYL=[['Zu','Mo','Bib','Snor','Pim','Quil','Nok','Fiz','Tof','Wib','Dor','Pu','Spro','Glim'],['ble','ry','po','ka','zz','fin','nip','ter']];
+const STAGE_NAME=['','Baby','Kid','Grown-up'];
+const TOWERS=[{name:'Tower 1',a:'A',b:'I'},{name:'Tower 2',a:'J',b:'R'},{name:'Tower 3',a:'S',b:'Z'}];
+const keepDefault=()=>({coins:0,mats:{},food:{},wear:{hat:0,robe:0,wand:0,broom:0},owned:{hat:[0],robe:[0],wand:[0],broom:[0]},
+  work:{wand:0,speed:0,acc:0,flight:0},nest:{food:{},count:0},cocoon:null,pets:[],attacks:0});
+function mergeKeep(s){const d=keepDefault();s=s||{};
+  return {...d,...s,mats:{...(s.mats||{})},food:{...(s.food||{})},wear:{...d.wear,...(s.wear||{})},owned:{...d.owned,...(s.owned||{})},
+    work:{...d.work,...(s.work||{})},nest:{food:{},count:0,...(s.nest||{})},pets:s.pets||[],cocoon:s.cocoon||null};}
+G.keep=keepDefault();
+const workLv=id=>G.keep.work[id]||0;
+const wearOpt=slot=>WEAR[slot].opts[G.keep.wear[slot]||0];
+// practice never changes your school stuff
+function earn(kind,n,key){if(G.practice||!(n>0))return;const k=G.keep;
+  if(kind==='coins')k.coins+=n;else if(kind==='mat')k.mats[key]=(k.mats[key]||0)+n;else if(kind==='food')k.food[key]=(k.food[key]||0)+n;}
+function attackDue(){const t=G.school.term;return t>1&&t<=SCHOOL.terms&&(t-1)%3===0;}
+
+/* ---------- pets: feed the nest, a cocoon hatches when the next term starts ---------- */
+function petBody(tally){let best='starberry',bn=-1;for(const f of Object.keys(FOOD)){const v=tally[f]||0;if(v>bn){bn=v;best=f;}}return best;}
+function petHue(tally){let x=0,y=0,n=0;for(const f of Object.keys(FOOD)){const w=tally[f]||0,a=FOOD[f].hue*PI/180;x+=Math.cos(a)*w;y+=Math.sin(a)*w;n+=w;}
+  return n?((Math.atan2(y,x)*180/PI)+360)%360:200;}
+function feedNest(food){const k=G.keep;if(k.cocoon||!(k.food[food]>0)||k.nest.count>=10)return;
+  k.food[food]--;k.nest.food[food]=(k.nest.food[food]||0)+1;k.nest.count++;
+  if(k.nest.count>=10){k.cocoon={food:{...k.nest.food}};k.nest={food:{},count:0};}}
+// returns a message when a cocoon hatches, or null. A grown-up pet is retired and the next cocoon makes a new one.
+function hatchEgg(){const k=G.keep;if(!k.cocoon)return null;const food=k.cocoon.food;k.cocoon=null;
+  const cur=k.pets[k.pets.length-1];
+  if(cur&&cur.stage<3){cur.stage++;for(const f in food)cur.tally[f]=(cur.tally[f]||0)+food[f];cur.body=petBody(cur.tally);cur.hue=petHue(cur.tally);
+    return `${cur.name} grew into a ${STAGE_NAME[cur.stage]} ${FOOD[cur.body].body}! Its shape and colors change with every snack.`;}
+  const seed=Math.floor(Math.random()*1e6);
+  const p={id:seed,name:PET_SYL[0][seed%PET_SYL[0].length]+PET_SYL[1][Math.floor(seed/7)%PET_SYL[1].length],stage:1,tally:{...food},seed};
+  p.body=petBody(p.tally);p.hue=petHue(p.tally);k.pets.push(p);
+  return `An egg hatched! Meet ${p.name}, a ${FOOD[p.body].body} that is ${FOOD[p.body].desc}.`;}
+function petSVG(p){
+  const h=p.hue,s=p.stage,c=`hsl(${h},75%,64%)`,d=`hsl(${h},60%,36%)`,l=`hsl(${h},95%,88%)`;
+  let x='';
+  if(p.body==='moonflower')x+=`<path d="M44 52 C18 24 4 46 18 66 Z" fill="${l}" stroke="${d}" stroke-width="2"/><path d="M56 52 C82 24 96 46 82 66 Z" fill="${l}" stroke="${d}" stroke-width="2"/>`;
+  if(p.body==='feather')x+=`<path d="M40 76 Q30 100 18 98 Q34 90 40 74 Z" fill="${d}"/><path d="M50 78 Q50 104 46 106 Q44 92 50 78 Z" fill="${l}"/><path d="M60 76 Q70 100 82 98 Q66 90 60 74 Z" fill="${d}"/>`;
+  if(p.body==='starberry')x+=`<path d="M30 42 L24 18 L40 30 L50 10 L60 30 L76 18 L70 42 Z" fill="#ffd23a" stroke="#a6830a" stroke-width="2" stroke-linejoin="round"/>`;
+  x+=`<ellipse cx="50" cy="60" rx="${24+s*2}" ry="${20+s*2}" fill="${c}" stroke="${d}" stroke-width="3"/>`;
+  if(p.body==='mushroom'){x+=`<path d="M26 56 Q50 24 74 56 Z" fill="${d}" opacity=".5"/>`;
+    for(let i=0;i<2+p.seed%4;i++)x+=`<circle cx="${34+(i*17)%30}" cy="${42+(i*11)%12}" r="3" fill="#fff"/>`;}
+  x+=`<circle cx="42" cy="60" r="4.5" fill="#1a1028"/><circle cx="58" cy="60" r="4.5" fill="#1a1028"/><circle cx="43.5" cy="58.5" r="1.5" fill="#fff"/><circle cx="59.5" cy="58.5" r="1.5" fill="#fff"/>`;
+  x+=`<path d="M44 70 Q50 75 56 70" stroke="#1a1028" stroke-width="2" fill="none" stroke-linecap="round"/>`;
+  if(s>=3)x+=`<path d="M86 14 l3 6 6 3 -6 3 -3 6 -3 -6 -6 -3 6 -3z" fill="#ffd23a"/><path d="M8 40 l2 4 4 2 -4 2 -2 4 -2 -4 -4 -2 4 -2z" fill="#ffd23a"/>`;
+  return `<svg class="petsvg" viewBox="0 0 100 110" aria-hidden="true">${x}</svg>`;}
+function petCard(p){return `<div class="pcard">${petSVG(p)}<b>${p.name}</b><small>${STAGE_NAME[p.stage]} ${FOOD[p.body].body}</small><small>${FOOD[p.body].desc}</small></div>`;}
+
+/* ---------- the school party (lobby) ---------- */
+const PARTY={tab:'wardrobe'};
+function wardrobeHTML(){const k=G.keep;
+  return '<p class="pnote">Pick your favorite looks. You will see them in every game!</p>'+
+    Object.keys(WEAR).map(slot=>`<h3>${WEAR[slot].label}</h3>`+WEAR[slot].opts.map((o,i)=>{
+      const on=(k.wear[slot]||0)===i,owned=k.owned[slot].includes(i);
+      const btn=on?'<button disabled type="button">Wearing</button>':owned?`<button type="button" data-act="wear" data-a="${slot}" data-b="${i}">Wear</button>`
+        :`<button type="button" data-act="buy" data-a="${slot}" data-b="${i}" ${k.coins<o.cost?'disabled':''}>Buy for ${o.cost}</button>`;
+      return `<div class="prow"><span class="sw" style="background:${o.c||o.tip}"></span><span class="nm">${o.name}</span>${btn}</div>`;}).join('')).join('');}
+function workshopHTML(){const k=G.keep;
+  return '<p class="pnote">Spend coins and forest materials to make your magic stronger.</p>'+WORK.map(w=>{
+    const L=workLv(w.id),cost=3+3*L,need=L+1,have=k.mats[w.mat]||0;
+    const btn=L>=WORK_MAX?'<button disabled type="button">Maxed!</button>':`<button type="button" data-act="work" data-a="${w.id}" ${k.coins>=cost&&have>=need?'':'disabled'}>Upgrade</button>`;
+    const info=L<WORK_MAX?`Next: ${cost} coins + ${need} ${MATS[w.mat].name} (you have ${have})`:'Fully upgraded';
+    return `<div class="prow"><span class="nm">${w.name}<small>${w.what}</small><small>Level ${L} of ${WORK_MAX}. ${info}</small></span>${btn}</div>`;}).join('');}
+function nestHTML(){const k=G.keep,foods=Object.keys(FOOD),blocked=!!k.cocoon||k.nest.count>=10;
+  let h='<p class="pnote">Feed the Pet Nest forest food. Every 10 bites make a cocoon, and the pet hatches when the next term starts!</p>';
+  h+='<div class="pfood">'+foods.map(f=>`<div class="pf">${FOOD[f].name}<b>${k.food[f]||0}</b><button type="button" data-act="feed" data-a="${f}" ${(k.food[f]||0)>0&&!blocked?'':'disabled'}>Feed nest</button></div>`).join('')+'</div>';
+  h+=`<p class="pnote">${k.cocoon?'A cocoon is resting in the nest. Your pet hatches when the next term starts!':`Nest: ${k.nest.count} of 10 food`}</p>`;
+  h+=k.pets.length?`<div class="pcards">${k.pets.map(petCard).join('')}</div>`:'<p class="pnote">No pets yet. Feed the nest to get your first one!</p>';
+  return h;}
+function drawParty(){const k=G.keep;
+  $('partyWallet').innerHTML=`Coins: <b>${k.coins}</b>`+Object.keys(k.mats).filter(m=>k.mats[m]>0).map(m=>` · ${MATS[m].name} ${k.mats[m]}`).join('');
+  $('partyTabs').innerHTML=[['wardrobe','Wardrobe'],['workshop','Workshop'],['nest','Pet Nest']].map(([id,l])=>
+    `<button type="button" class="btn ptab${PARTY.tab===id?' on':''}" data-act="tab" data-a="${id}">${l}</button>`).join('');
+  $('partyBody').innerHTML=PARTY.tab==='wardrobe'?wardrobeHTML():PARTY.tab==='workshop'?workshopHTML():nestHTML();}
+function upgradeWork(id){const w=WORK.find(x=>x.id===id),k=G.keep,L=workLv(id);if(!w||L>=WORK_MAX)return;
+  const cost=3+3*L,need=L+1;if(k.coins<cost||(k.mats[w.mat]||0)<need)return;
+  k.coins-=cost;k.mats[w.mat]-=need;k.work[id]=L+1;}
+function showParty(){clearFx();hideAllScreens();
+  ['hud','fireBtn','pad','hearts','spellBar'].forEach(id=>$(id).hidden=true);$('book').classList.add('hidden');
+  G.state='party';
+  $('partyTerm').textContent=`Term ${G.school.term-1} is done. Party time!`;
+  $('partyNext').textContent=attackDue()?'Off to fight!':'Start the next term';
+  $('partyScreen').hidden=false;drawParty();saveProgress();Sfx.heal();}
+function leaveParty(){
+  const msg=hatchEgg(),next=attackDue()?showAttackIntro:showIntro;
+  saveProgress();$('partyScreen').hidden=true;
+  if(!msg){next();return;}
+  clearFx();G.state='intro';G.introGo=next;
+  ['potion','shopEnd','endScreen','titleScreen','hud','pad','reportScreen','partyScreen','fireBtn'].forEach(id=>$(id).hidden=true);
+  fillIntroCard('Your pet hatched!',msg,null);$('goBtn').textContent='Next!';$('introScreen').hidden=false;}
+$('partyNext').onclick=()=>leaveParty();
+$('partyScreen').addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-act]');if(!b||b.disabled)return;
+  const a=b.dataset.act,k=G.keep;
+  if(a==='tab')PARTY.tab=b.dataset.a;
+  else if(a==='wear')k.wear[b.dataset.a]=+b.dataset.b;
+  else if(a==='buy'){const slot=b.dataset.a,i=+b.dataset.b,o=WEAR[slot].opts[i];if(k.coins<o.cost)return;k.coins-=o.cost;k.owned[slot].push(i);k.wear[slot]=i;}
+  else if(a==='work')upgradeWork(b.dataset.a);
+  else if(a==='feed')feedNest(b.dataset.a);
+  Sfx.plip();saveProgress();drawParty();});
+
+/* ---------- School Under Attack: fly the castle walls, then trace the towers ---------- */
+const SG={phase:'',spawned:0,wallsTotal:8,spawnT:0,t:0,tower:0,next:0,letters:[],mons:[],zapped:0,done:false,doneT:0,note:null};
+function towerLetters(i){const t=TOWERS[i],out=[];for(let c=t.a.charCodeAt(0);c<=t.b.charCodeAt(0);c++)out.push(String.fromCharCode(c));return out;}
+function showAttackIntro(){clearFx();G.state='intro';G.introGo=startSiege;
+  ['potion','shopEnd','endScreen','titleScreen','hud','pad','reportScreen','gradScreen','partyScreen','fireBtn','mush','sbook','spellCard'].forEach(id=>$(id).hidden=true);
+  fillIntroCard('School Under Attack!','Help! Monsters are attacking the castle walls! Fly over the walls, then trace the magic letters in each tower to zap the monsters. Save the school!',null);
+  $('goBtn').textContent='Fly to the castle!';$('introScreen').hidden=false;}
+function startSiege(){clearFx();
+  Object.assign(FL,{t:0,dist:0,px:0,py:1.5,tx:0,ty:1.5,bank:0,objs:[],deco:[],shots:[],score:0,supplies:0,zaps:0,hits:0,food:{},pages:0,
+    invuln:0,biome:'castle',banner:null,firing:false,holding:false,last:null,acc:{},forkAt:[],mana:0,power:0,overheat:false,fireT:0});
+  Object.assign(SG,{phase:'walls',spawned:0,spawnT:0,t:0,tower:0,next:0,letters:[],mons:[],zapped:0,done:false,doneT:0,note:null});
+  G.state='siege';
+  ['introScreen','endScreen','titleScreen','reportScreen','partyScreen','gradScreen','spellCard','sbook','mush','potion','shopEnd'].forEach(id=>$(id).hidden=true);
+  $('hud').hidden=true;$('fireBtn').hidden=true;$('pad').hidden=true;$('hearts').hidden=true;$('spellBar').hidden=true;$('book').classList.add('hidden');
+  FL.banner={text:'Dodge the castle walls!',t:2.6};Sfx.startMusic();}
+function startFly(next){clearFx();G.state='siege';SG.phase='fly';SG.next=next;SG.t=0;FL.objs=[];
+  FL.banner={text:next===0?'Into the castle!':'Fly to the next tower!',t:2.4};}
+function startHome(){G.state='siege';SG.phase='home';SG.t=0;FL.objs=[];FL.banner={text:'Back to school!',t:3};}
+function startTower(i){clearFx();G.state='tower';SG.tower=i;SG.phase='tower';SG.done=false;SG.letters=towerLetters(i);FL.banner=null;
+  // monsters stand on two evenly spaced rings around the tower roof
+  const s=Math.min(W,H),cx=W/2,cy=H*0.46,rad=s*0.075,n=SG.letters.length,inner=Math.ceil(n/2),outer=n-inner;
+  const ph1=Math.random()*PI*2,ph2=Math.random()*PI*2,slots=[];
+  for(let k=0;k<inner;k++){const a=ph1+k/inner*PI*2;slots.push([cx+Math.cos(a)*s*0.19,cy+Math.sin(a)*s*0.19]);}
+  for(let k=0;k<outer;k++){const a=ph2+k/outer*PI*2;slots.push([cx+Math.cos(a)*s*0.34,cy+Math.sin(a)*s*0.34]);}
+  const order=SG.letters.map((L,k)=>k).sort(()=>Math.random()-0.5);
+  SG.mons=SG.letters.map((L,k)=>{const sl=slots[order[k]];
+    return {L,sx:sl[0],sy:sl[1],r:rad,col:'RYGBP'[Math.floor(Math.random()*5)],dead:false,dying:0,ph:Math.random()*6};});
+  SG.note={text:'Trace each letter to zap its monster!',t:3.2};
+  $('hud').hidden=true;$('fireBtn').hidden=true;$('pad').hidden=true;$('hearts').hidden=true;$('book').classList.add('hidden');}
+function towerRead(pts,strokes,cx,cy){
+  const ranked=Rec.recognize(pts,SG.letters);
+  const hit=ranked&&ranked.find(r=>r.dist<=CONFIG.matchThreshold&&SG.mons.some(m=>!m.dead&&m.L===r.name));
+  if(!hit){G.fadeTrail={strokes,t:0.35,color:'rgba(160,150,180,'};Sfx.fizzle();floatText('Fizzle…',cx,cy,'#b9a8d9');return;}
+  const m=SG.mons.find(m=>!m.dead&&m.L===hit.name),c=CONFIG.colors[m.col];
+  m.dead=true;m.dying=0;SG.zapped++;G.zaps++;G.score++;
+  Sfx.zap();Sfx.pop();burst(m.sx,m.sy,c.glow,26,m.r*1.2);floatText('ZAP!',m.sx,m.sy-m.r*1.3,c.fill,true);
+  G.fadeTrail={strokes,t:0.45,color:'rgba(255,210,58,'};}
+function updateTower(dt){
+  for(const m of SG.mons)if(m.dead)m.dying+=dt;
+  if(!SG.done&&SG.mons.every(m=>m.dead)){SG.done=true;SG.doneT=2.2;Sfx.roundEnd();earn('coins',3);
+    SG.note={text:`${TOWERS[SG.tower].name} is saved!`,t:2.2};}
+  if(SG.done){SG.doneT-=dt;if(SG.doneT<=0){if(SG.tower<TOWERS.length-1)startFly(SG.tower+1);else startHome();}}
+  if(SG.note){SG.note.t-=dt;if(SG.note.t<=0)SG.note=null;}}
+function updateSiege(dt){
+  FL.invuln=Math.max(0,FL.invuln-dt);FL.dist+=11*dt;
+  if(FL.banner){FL.banner.t-=dt;if(FL.banner.t<=0)FL.banner=null;}
+  const kx=Math.min(1,dt*7);FL.bank+=((FL.tx-FL.px)-FL.bank)*Math.min(1,dt*6);FL.px+=(FL.tx-FL.px)*kx;FL.py+=(FL.ty-FL.py)*kx;
+  SG.t+=dt;
+  if(SG.phase==='walls'){
+    SG.spawnT-=dt;
+    if(SG.spawned<SG.wallsTotal&&SG.spawnT<=0){SG.spawnT=1.7;SG.spawned++;FL.objs.push({kind:'wall',z:FLIGHT.zFar,gap:frand(-2.2,2.2),gw:1.6,done:false});}
+    for(const o of FL.objs){const pz=o.z;o.z-=11*dt;
+      if(o.kind==='wall'&&!o.done&&pz>0&&o.z<=0){o.done=true;
+        if(Math.abs(FL.px-o.gap)<=o.gw/2){Sfx.plip();floatText('Whoosh!',W/2,H*0.55,'#ffd23a');}
+        else if(FL.invuln<=0){FL.invuln=1;FL.hits++;G.shake=reduceMotion?0.2:1;Sfx.bonk();floatText('Oof!',W/2,H*0.55,'#ff4a3d',true);}}}
+    FL.objs=FL.objs.filter(o=>o.z>-3);
+    if(SG.spawned>=SG.wallsTotal&&!FL.objs.length)startFly(0);
+  }else if(SG.phase==='fly'){if(SG.t>=2.4)startTower(SG.next);}
+  else if(SG.phase==='home'){if(SG.t>=3.2)finishSiege();}
+}
+function finishSiege(){G.state='attackEnd';G.keep.attacks++;earn('coins',5);saveProgress();
+  ['hud','fireBtn','pad','hearts'].forEach(id=>$(id).hidden=true);
+  $('endScreen').hidden=false;$('endTitle').textContent='The school is saved!';
+  $('endStars').innerHTML=starHTML(3);
+  $('endZaps').textContent=SG.zapped;$('endZapsLbl').textContent='Monsters zapped';
+  $('endBonks').textContent=FL.hits;$('endBonksLbl').textContent='Bumps';
+  $('endLevel').textContent='The castle is safe, and everyone cheers! You earned coins for the party.';
+  $('nextBtn').textContent='To the school party!';G.afterEnd=showParty;Sfx.heal();}
+function drawWall(o){
+  const TOP_H=3.4,CAP=4.1;
+  const face=fogged('#8c8497',o.z),cap=fogged('#5d5667',o.z),line=fogged('#3a3446',o.z);
+  const seg=(x0,x1)=>{
+    const a=fproj(x0,0,o.z),b=fproj(x1,0,o.z),c=fproj(x1,TOP_H,o.z),d=fproj(x0,TOP_H,o.z);
+    if(!a||!b||!c||!d)return;
+    ctx.fillStyle=face;ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.lineTo(c.x,c.y);ctx.lineTo(d.x,d.y);ctx.closePath();ctx.fill();
+    ctx.strokeStyle=line;ctx.lineWidth=Math.max(1,b.k*0.05);
+    for(let y=0.9;y<TOP_H;y+=0.9){const p=fproj(x0,y,o.z),q=fproj(x1,y,o.z);if(p&&q){ctx.beginPath();ctx.moveTo(p.x,p.y);ctx.lineTo(q.x,q.y);ctx.stroke();}}
+    ctx.fillStyle=cap;
+    for(let x=x0;x<x1-0.2;x+=0.9){const w=Math.min(0.45,x1-x),pts=[fproj(x,TOP_H,o.z),fproj(x+w,TOP_H,o.z),fproj(x+w,CAP,o.z),fproj(x,CAP,o.z)];
+      if(pts.every(Boolean)){ctx.beginPath();ctx.moveTo(pts[0].x,pts[0].y);pts.slice(1).forEach(q=>ctx.lineTo(q.x,q.y));ctx.closePath();ctx.fill();}}
+  };
+  seg(-3.8,o.gap-o.gw/2);seg(o.gap+o.gw/2,3.8);
+  const g=fproj(o.gap,0.25,o.z);
+  if(g&&!o.done){ctx.fillStyle='rgba(255,210,58,.35)';ctx.beginPath();ctx.arc(g.x,g.y,Math.max(4,g.k*0.25),0,7);ctx.fill();}
+}
+function renderTower(){
+  const s=Math.min(W,H),cx=W/2,cy=H*0.46,R=s*0.42;
+  const g=ctx.createRadialGradient(cx,cy,R*0.2,cx,cy,Math.max(W,H)*0.75);g.addColorStop(0,'#3e5b3c');g.addColorStop(1,'#16241a');
+  ctx.fillStyle=g;ctx.fillRect(-20,-20,W+40,H+40);
+  ctx.fillStyle='#8a8294';ctx.beginPath();ctx.arc(cx,cy,R,0,7);ctx.fill();
+  ctx.strokeStyle='#3a3446';ctx.lineWidth=s*0.035;ctx.stroke();
+  ctx.fillStyle='#5d5667';for(let i=0;i<24;i++){const a=i/24*PI*2;ctx.beginPath();ctx.arc(cx+Math.cos(a)*R,cy+Math.sin(a)*R,s*0.022,0,7);ctx.fill();}
+  ctx.fillStyle='#4b2a78';ctx.beginPath();ctx.arc(cx,cy,s*0.12,0,7);ctx.fill();
+  ctx.fillStyle='#a64dff';ctx.beginPath();ctx.arc(cx,cy,s*0.07,0,7);ctx.fill();
+  for(const m of SG.mons){const k=m.dead?Math.max(0,1-m.dying/0.35):1;if(k<=0)continue;
+    const col=CONFIG.colors[m.col],r=m.r*k,bob=Math.sin(G.clock*3+m.ph)*s*0.008;
+    ctx.save();ctx.translate(m.sx,m.sy+bob);
+    ctx.fillStyle=col.dark;ctx.beginPath();ctx.arc(0,r*0.12,r,0,7);ctx.fill();
+    ctx.fillStyle=col.fill;ctx.beginPath();ctx.arc(0,0,r,0,7);ctx.fill();
+    ctx.fillStyle='#fff';[-1,1].forEach(d=>{ctx.beginPath();ctx.arc(d*r*0.35,-r*0.25,r*0.16,0,7);ctx.fill();});
+    ctx.fillStyle='#1a1028';[-1,1].forEach(d=>{ctx.beginPath();ctx.arc(d*r*0.35,-r*0.22,r*0.07,0,7);ctx.fill();});
+    ctx.font=`${Math.round(r*0.85)}px ${DISPLAY_FONT}`;ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.lineWidth=Math.max(2,r*0.1);ctx.strokeStyle='#1a1028';ctx.strokeText(m.L,0,r*0.5);ctx.fillStyle='#fff';ctx.fillText(m.L,0,r*0.5);
+    ctx.restore();}
+  const u=s*0.07,wx=W/2,wy=H*0.9;
+  ctx.fillStyle=wearOpt('broom').c;ctx.fillRect(wx-u*1.4,wy+u*0.9,u*2.8,u*0.18);
+  ctx.fillStyle=wearOpt('robe').c;ctx.beginPath();ctx.ellipse(wx,wy,u*0.8,u,0,0,7);ctx.fill();
+  ctx.fillStyle='#ff8a1c';ctx.beginPath();ctx.arc(wx,wy-u*0.7,u*0.4,0,7);ctx.fill();
+  ctx.fillStyle=wearOpt('hat').c;ctx.beginPath();ctx.moveTo(wx-u*0.6,wy-u*0.9);ctx.lineTo(wx+u*0.6,wy-u*0.9);ctx.lineTo(wx,wy-u*2.1);ctx.closePath();ctx.fill();
+  const left=SG.mons.filter(m=>!m.dead).length;
+  ctx.textBaseline='middle';ctx.textAlign='center';ctx.lineWidth=5;ctx.strokeStyle='#1a1028';
+  const top=`${TOWERS[SG.tower].name} of ${TOWERS.length}: ${left?`${left} monster${left===1?'':'s'} left`:'all clear!'}`;
+  ctx.font=`${Math.round(s*0.05)}px ${DISPLAY_FONT}`;ctx.strokeText(top,cx,H*0.06);ctx.fillStyle='#fff3d6';ctx.fillText(top,cx,H*0.06);
+  if(SG.note){ctx.save();ctx.globalAlpha=Math.min(1,SG.note.t);ctx.font=`${Math.round(s*0.055)}px ${DISPLAY_FONT}`;
+    ctx.strokeText(SG.note.text,cx,H*0.13);ctx.fillStyle='#ffd23a';ctx.fillText(SG.note.text,cx,H*0.13);ctx.restore();}
+}
+
 /* ---------- main loop ---------- */
 let last=performance.now();
 function frame(now){
@@ -1991,6 +2305,8 @@ function update(dt){
   G.recoil=Math.max(0,G.recoil-dt*4);G.shake=Math.max(0,G.shake-dt*3);G.flash=Math.max(0,(G.flash||0)-dt*2);
   if(G.state==='potion')updatePotion(dt);
   if(G.state==='fly')updateFlight(dt);
+  if(G.state==='siege')updateSiege(dt);
+  if(G.state==='tower'){if(G.strokeTimer>0){G.strokeTimer-=dt;if(G.strokeTimer<=0){G.strokeTimer=-1;readSpell();}}updateTower(dt);}
   if(G.state==='mush')updateMush(dt);
   if(G.state==='play'){
     G.time-=dt; if(G.time<=0){if(G.practice){wandPracticeNext();}else{G.time=0;updateHud();endRound(true);return;}}
@@ -2008,7 +2324,7 @@ function update(dt){
       if(!m.dead){const sc=m.screen||{x:W/2,y:H/2,s:40}, c=colorOf(b.L);
         if(!m.need.includes(b.L)){m.pending=m.pending.filter(l=>l!==b.L);continue;}   // a Rainbow changed it mid-flight
         m.pending=m.pending.filter(l=>l!==b.L); m.need=m.need.filter(l=>l!==b.L);
-        if(m.need.length===0){const pts=m.zebra?CONFIG.zebraPoints:1;G.starCharge=Math.min(starNeed(),G.starCharge+1);m.dead=true;m.dying=0.001;G.zaps+=pts;G.score+=pts;Sfx.zap();Sfx.pop();if(m.zebra)floatText(`WILD! +${pts}`,sc.x,sc.y-sc.s*1.1,'#ffd23a',true);
+        if(m.need.length===0){const pts=m.zebra?CONFIG.zebraPoints:1;G.starCharge=Math.min(starNeed(),G.starCharge+1+workLv('wand'));m.dead=true;m.dying=0.001;G.zaps+=pts;G.score+=pts;Sfx.zap();Sfx.pop();if(m.zebra)floatText(`WILD! +${pts}`,sc.x,sc.y-sc.s*1.1,'#ffd23a',true);
           burst(sc.x,sc.y,c.glow,26,sc.s);floatText(m.math?'POOF!':'ZAP!',sc.x,sc.y-sc.s*0.6,m.math?'#ffd23a':c.fill);}
         else{ // two-color monster loses one color: becomes a plain monster of the other color, knocked back a bit
           m.two=false;m.letter=m.need[0].toUpperCase();m.z=Math.min(m.z0,m.z+0.8);m.wobble=1;Sfx.zap();
@@ -2044,10 +2360,11 @@ function render(){
   const cfg=roundCfg(G.wandLvl);
   ctx.save();
   if(G.shake>0){const k=G.shake*10;ctx.translate((Math.random()-.5)*k,(Math.random()-.5)*k);}
-  if(G.state==='puzzle'||G.state==='spellCard'||G.state==='report'||G.state==='grad')renderBookBg();
+  if(G.state==='puzzle'||G.state==='spellCard'||G.state==='report'||G.state==='grad'||G.state==='party'||G.state==='attackEnd')renderBookBg();
   else if(G.state==='mush'||G.state==='mushEnd')renderMushBg();
-  else if(G.state==='fly'||G.state==='flyEnd')renderFlight();
+  else if(G.state==='fly'||G.state==='flyEnd'||G.state==='siege')renderFlight();
   else if(G.state==='potion'||G.state==='shopEnd')renderPotion();
+  else if(G.state==='tower')renderTower();
   else if(scenery)ctx.drawImage(scenery,0,0,W,H);
   if(G.state==='play'||G.state==='end'){
     drawGuide(cfg);
@@ -2061,7 +2378,7 @@ function render(){
     ctx.stroke();ctx.strokeStyle='#fff';ctx.lineWidth=3;ctx.stroke();}
   if(G.state==='play'||G.state==='end')drawHand();
   // trail
-  if(G.state==='play'&&G.strokes.length)drawStrokes(G.strokes,'rgba(255,236,200,',1,6);
+  if((G.state==='play'||G.state==='tower')&&G.strokes.length)drawStrokes(G.strokes,'rgba(255,236,200,',1,6);
   if(G.state==='play'&&G.fadeTrail)drawStrokes(G.fadeTrail.strokes,G.fadeTrail.color,Math.max(0,G.fadeTrail.t/0.45),6);
   // particles
   for(const p of G.parts){ctx.fillStyle=p.c+(p.life/p.max)+')';ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,7);ctx.fill();}
