@@ -9,6 +9,7 @@
 <meta charset="utf-8">
 <meta charset="utf-8">
 <meta charset="utf-8">
+<meta charset="utf-8">
 <title>Witchity Witch Witch Which Way Do I Go</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -107,6 +108,7 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-acti
 #shelf button:active{transform:translateY(3px);box-shadow:0 1px 0 rgba(0,0,0,.45)}
 #shelf button:focus-visible{outline:3px solid var(--yellow);outline-offset:2px}
 #shelf svg{width:40px;height:56px;display:block;margin:auto}
+#shelf .bpic{width:auto;height:50px;max-width:46px;display:block;margin:auto;object-fit:contain}
 .pbtns{display:flex;gap:10px;justify-content:center}
 .pbtns .btn{padding:12px 24px;font-size:18px}
 .btn:disabled{opacity:.5}
@@ -1106,7 +1108,7 @@ function nextCustomer(){
   $('recipe').innerHTML=`<small>Recipe</small>`+PZ.cur.recipe.map(l=>`<div class="fline" style="color:${CONFIG.colors[l.c].fill};font-size:${l.text.length>13?24:l.text.length>9?29:34}px">${l.text}</div>`).join('');
   $('shelf').innerHTML='';
   shopPalette().forEach(c=>{const col=CONFIG.colors[c],b=document.createElement('button');b.type='button';b.id='bottle'+c;b.setAttribute('aria-label',`Add a ${col.name} drop`);
-    b.innerHTML=`<svg viewBox="0 0 40 56" aria-hidden="true"><path d="M15 6h10v9c7 3 11 9 11 17 0 12-7 20-16 20S4 44 4 32c0-8 4-14 11-17z" fill="rgba(246,239,255,.12)" stroke="#f6efff" stroke-width="2"/><path d="M5.5 31c0 11 6 19 14.5 19s14.5-8 14.5-19z" fill="${col.fill}"/><circle cx="14" cy="38" r="2.5" fill="rgba(255,255,255,.6)"/><rect x="13" y="2" width="14" height="7" rx="2" fill="#8a5a30"/></svg>`;
+    b.innerHTML=bottlePicHTML(c)||`<svg viewBox="0 0 40 56" aria-hidden="true"><path d="M15 6h10v9c7 3 11 9 11 17 0 12-7 20-16 20S4 44 4 32c0-8 4-14 11-17z" fill="rgba(246,239,255,.12)" stroke="#f6efff" stroke-width="2"/><path d="M5.5 31c0 11 6 19 14.5 19s14.5-8 14.5-19z" fill="${col.fill}"/><circle cx="14" cy="38" r="2.5" fill="rgba(255,255,255,.6)"/><rect x="13" y="2" width="14" height="7" rx="2" fill="#8a5a30"/></svg>`;
     b.addEventListener('pointerdown',e=>{e.preventDefault();addDrop(c,b);});
     b.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();addDrop(c,b);}});
     $('shelf').appendChild(b);});
@@ -1238,6 +1240,10 @@ function shade(hex,mix,amt){const p=h=>[1,3,5].map(i=>parseInt(h.slice(i,i+2),16
 // the big cauldron picture; its liquid is tinted with the mixing color (drawn cauldron is the fallback)
 const CAULDRON_PIC={img:new Image(),ready:false};
 CAULDRON_PIC.img.onload=()=>{CAULDRON_PIC.ready=true;};CAULDRON_PIC.img.src='art/cauldron.png';
+// shelf bottles: one picture per color (drawn bottle is the fallback)
+const BOTTLE_PIC={};
+['R','G','Y','B','P'].forEach(k=>{const I=new Image();BOTTLE_PIC[k]={img:I,ready:false};I.onload=()=>{BOTTLE_PIC[k].ready=true;};I.src='art/potion-'+k+'.png';});
+function bottlePicHTML(c){const p=BOTTLE_PIC[c];return p&&p.ready?`<img class="bpic" src="${p.img.src}" alt="">`:null;}
 // customer pictures: sick while waiting for the potion, happy once healed. Drawn shapes are the fallback.
 const PERSON_IMG={sick:new Image(),happy:new Image()},personReady={sick:false,happy:false};
 PERSON_IMG.sick.onload=()=>{personReady.sick=true;};PERSON_IMG.sick.src='art/customer-sick.png';
@@ -2417,6 +2423,7 @@ if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>{});
 loadProgress();showProgressLine();
 requestAnimationFrame(frame);
 </script>
+
 
 
 
