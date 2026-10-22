@@ -11,6 +11,7 @@
 <meta charset="utf-8">
 <meta charset="utf-8">
 <meta charset="utf-8">
+<meta charset="utf-8">
 <title>Witchity Witch Witch Which Way Do I Go</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -1251,12 +1252,13 @@ const BOTTLE_PIC={};
 ['R','G','Y','B','P'].forEach(k=>{const I=new Image();BOTTLE_PIC[k]={img:I,ready:false};I.onload=()=>{BOTTLE_PIC[k].ready=true;};I.src='art/potion-'+k+'.png';});
 function bottlePicHTML(c){const p=BOTTLE_PIC[c];return p&&p.ready?`<img class="bpic" src="${p.img.src}" alt="">`:null;}
 // customer pictures: sick while waiting for the potion, happy once healed. Drawn shapes are the fallback.
-const PERSON_IMG={sick:new Image(),sickMan:new Image(),happy:new Image()},personReady={sick:false,sickMan:false,happy:false};
+const PERSON_IMG={sick:new Image(),sickMan:new Image(),happy:new Image(),happyMan:new Image()},personReady={sick:false,sickMan:false,happy:false,happyMan:false};
+PERSON_IMG.happyMan.onload=()=>{personReady.happyMan=true;};PERSON_IMG.happyMan.src='art/customer-happy-man.png';
 PERSON_IMG.sick.onload=()=>{personReady.sick=true;};PERSON_IMG.sick.src='art/customer-sick.png';
 PERSON_IMG.sickMan.onload=()=>{personReady.sickMan=true;};PERSON_IMG.sickMan.src='art/customer-sick-man.png';
 PERSON_IMG.happy.onload=()=>{personReady.happy=true;};PERSON_IMG.happy.src='art/customer-happy.png';
 function drawPerson(x,y,R,look,mode){
-  const sick=mode==='sick',key=sick?((PZ.cur&&PZ.cur.sprite)||'sick'):'happy';
+  const sick=mode==='sick',man=!!(PZ.cur&&PZ.cur.sprite==='sickMan'),key=sick?((PZ.cur&&PZ.cur.sprite)||'sick'):(man?'happyMan':'happy');
   if(personReady[key]){const I=PERSON_IMG[key],h=R*4.9,w=h*I.width/I.height;
     ctx.imageSmoothingEnabled=true;ctx.drawImage(I,x-w/2,y-R*1.2,w,h);return;}
   ctx.fillStyle=look.shirt;ctx.beginPath();ctx.ellipse(x,y+R*2.1,R*1.35,R*1.2,0,PI,0);ctx.lineTo(x+R*1.35,y+R*3);ctx.lineTo(x-R*1.35,y+R*3);ctx.fill();
@@ -2430,6 +2432,7 @@ if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>{});
 loadProgress();showProgressLine();
 requestAnimationFrame(frame);
 </script>
+
 
 
 
