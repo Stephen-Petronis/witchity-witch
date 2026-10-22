@@ -7,11 +7,6 @@
 </head>
 <body>
 <meta charset="utf-8">
-<meta charset="utf-8">
-<meta charset="utf-8">
-<meta charset="utf-8">
-<meta charset="utf-8">
-<meta charset="utf-8">
 <title>Witchity Witch Witch Which Way Do I Go</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -97,14 +92,19 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-acti
 .phead h2{margin:0;font-family:var(--display);font-size:26px;font-weight:400;color:var(--ink);text-shadow:0 2px 0 #000}
 #pInfo{font-size:13px;font-weight:600;color:var(--muted);text-align:right;font-variant-numeric:tabular-nums}
 #custSpot{flex:1 1 auto;min-height:110px}
-#bubble{align-self:center;max-width:34ch;background:var(--ink);color:#1b0f30;border-radius:16px;padding:8px 14px;font-weight:600;font-size:15px;line-height:1.3;text-align:center;position:relative;text-wrap:balance}
+#bubble{position:absolute!important;left:50%;transform:translateX(-50%);top:calc(var(--bubbleTop,40px));z-index:3;width:max-content;max-width:min(34ch,88%);align-self:center;background:var(--ink);color:#1b0f30;border-radius:16px;padding:8px 14px;font-weight:600;font-size:15px;line-height:1.3;text-align:center;position:relative;text-wrap:balance}
 #bubble::before{content:"";position:absolute;left:50%;top:-8px;margin-left:-8px;border:8px solid transparent;border-top:0;border-bottom-color:var(--ink)}
 .board{background:#1d2b25;border:6px solid #7a4e2a;border-radius:12px;padding:8px 14px 10px;box-shadow:inset 0 0 24px rgba(0,0,0,.5),0 4px 0 rgba(0,0,0,.4);display:flex;flex-direction:column;align-items:center;gap:2px}
 .board small{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:rgba(246,239,255,.55);font-weight:600}
 .fline{font:700 34px/1.15 var(--body);letter-spacing:.06em;text-shadow:0 2px 0 rgba(0,0,0,.6);font-variant-numeric:tabular-nums}
 #cauldronSpot{flex:0 0 auto;height:min(20vh,140px)}
 /* the prescription: the customer holds it up, so it sits over the scroll in their picture */
-#recipe{position:relative;z-index:2;margin:-74px 14px 0;background:#f3e6c4;color:#2a1608;border:5px solid #7a4e2a;border-radius:14px;padding:8px 14px 10px;box-shadow:0 4px 0 rgba(0,0,0,.4);gap:0}
+#recipe{position:relative;z-index:2;margin:6px 14px 0;background:#f3e6c4;color:#2a1608;border:5px solid #7a4e2a;border-radius:14px;padding:8px 14px 10px;box-shadow:0 4px 0 rgba(0,0,0,.4);gap:0}
+#recipe.overlay{position:absolute;margin:0;box-sizing:border-box;border:0;background:none;box-shadow:none;padding:0;transform-origin:0 0;z-index:2;align-items:center}
+#recipe.overlay{bottom:auto!important;right:auto!important;display:flex!important;flex-direction:row!important;flex-wrap:nowrap!important;justify-content:center;align-items:center;width:max-content!important;height:auto!important;gap:0;white-space:nowrap}
+#recipe.overlay small{display:none}
+#recipe.overlay .fline{padding:0 12px}
+#recipe.overlay .fline+.fline{margin-top:0;padding-top:0;border-top:0;border-left:3px dashed #7a4e2a;padding-left:12px}
 #recipe small{color:#7a4e2a;font-weight:700}
 #recipe .fline{-webkit-text-stroke:1.5px #3a2010;paint-order:stroke fill;padding:4px 0;text-shadow:none}
 #recipe .fline+.fline{position:relative;margin-top:6px;padding-top:14px;border-top:3px dashed #7a4e2a}
@@ -1108,7 +1108,7 @@ function shopPalette(){return potionLevelCfg().colors.split('');}
 function nextCustomer(){
   let pool=POTION.folks.filter(f=>!PZ.usedFolks.includes(f[0])); if(!pool.length){PZ.usedFolks=[];pool=POTION.folks;}
   const f=pool[rint(0,pool.length-1)]; PZ.usedFolks.push(f[0]);
-  PZ.cur={name:f[0],ailment:f[1],look:randomLook(),recipe:makeRecipe(potionLevelCfg(),shopPalette()),mode:'sick',enter:0,flip:0,sprite:Math.random()<0.5?'sick':'sickMan'};
+  PZ.cur={name:f[0],ailment:f[1],look:randomLook(),recipe:makeRecipe(potionLevelCfg(),shopPalette()),mode:'sick',enter:0,flip:0,sprite:(PZ.lastSprite==='sick'?'sickMan':'sick')};PZ.lastSprite=PZ.cur.sprite;
   PZ.added=[];PZ.phase='mix';PZ.t=0;PZ.flights=[];
   $('pInfo').textContent=G.practice?`Practice · Potion level ${G.potionLvl+1} · ${PZ.healed} healed`:`Potion level ${G.potionLvl+1} · Customer ${PZ.idx+1} of ${POTION.customers}`;
   $('bubble').textContent=`${PZ.cur.name} ${PZ.cur.ailment}! Can you mix a potion?`;
@@ -1155,7 +1155,7 @@ function finishBrew(){
   if(ok){c.mode='healed';PZ.healed++;G.team.push(c.name);Sfx.heal();burst(cx,cy,'rgba(255,210,58,',30,90);
     $('bubble').textContent=`Hooray! ${c.name} feels better and joins your team!`;}
   else{c.mode='chicken';PZ.chickens++;G.flock.push(c.name);Sfx.bawk();burst(cx,cy,'rgba(255,255,255,',34,90);
-    $('bubble').textContent=`BAWK! ${c.name} turned into a chicken! (It needed ${c.recipe.map(l=>`${l.ans} ${CONFIG.colors[l.c].name}`).join(', ')}.)`;}
+    $('bubble').textContent=`BAWK! ${c.name} turned into a rat! (It needed ${c.recipe.map(l=>`${l.ans} ${CONFIG.colors[l.c].name}`).join(', ')}.)`;}
   if(G.practice){G.pStreak=ok?G.pStreak+1:0;
     if(G.pStreak>=PRACTICE.potionStreak){G.pStreak=0;G.potionLvl++;$('bubble').textContent+=` Level up! Potion level ${G.potionLvl+1}.`;Sfx.roundEnd();}}
   $('brewBtn').disabled=false;$('brewBtn').textContent=(G.practice||PZ.idx<POTION.customers-1)?'Next customer':'Close the shop';
@@ -1197,6 +1197,25 @@ function mixColor(a){
 }
 
 /* ---------- potion shop drawing ---------- */
+// Prescription sits on the parchment the old man holds (fractions of his picture)
+const PARCH={sick:{l:0.129,r:0.876,t:0.682,b:0.932},sickMan:{l:0.116,r:0.882,t:0.695,b:0.96}};
+function placeRecipe(x,y,R,I,P){
+  const el=$('recipe');if(!el)return;
+  const h=R*4.9,w=h*I.width/I.height,ox=x-w/2,oy=y-R*1.2;
+  const pw=w*(P.r-P.l),ph=h*(P.b-P.t);
+  // canvas coords -> offset parent (#potion) coords
+  const cb=cv.getBoundingClientRect(),pb=$('potion').getBoundingClientRect();
+  const dx=cb.left-pb.left,dy=cb.top-pb.top;
+  el.classList.add('overlay');el.style.width=pw+'px';el.style.transform='none';
+  const nh=el.offsetHeight,nw=el.scrollWidth,k=Math.min(1,pw/Math.max(1,nw),ph/Math.max(1,nh));
+  el.style.transformOrigin='0 0';el.style.transform=k<1?`scale(${k})`:'none';
+  el.style.left=(dx+ox+w*P.l+(pw-nw*k)/2)+'px';
+  el.style.top=(dy+oy+h*P.t+(ph-nh*k)/2)+'px';
+}
+function unplaceRecipe(){
+  const el=$('recipe');if(!el||!el.classList.contains('overlay'))return;
+  el.classList.remove('overlay');el.style.cssText='';
+}
 function renderPotion(){
   // shop wall, shelves of jars, a little window
   let g=ctx.createLinearGradient(0,0,0,H);g.addColorStop(0,'#2a1830');g.addColorStop(1,'#1a0f14');ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
@@ -1210,10 +1229,11 @@ function renderPotion(){
   // customer
   const cr=PZ.rects.cust, c=PZ.cur, R=Math.min(cr.h*0.28,cr.w*0.17);
   const ease=1-Math.pow(1-c.enter,3), cx=cr.x+cr.w/2-(1-ease)*cr.w*0.7, cy=cr.y+cr.h*0.42+Math.sin(G.clock*2)*2;
-  ctx.save();ctx.beginPath();ctx.rect(0,cr.y-R*0.8,W,cr.h+R*0.8);ctx.clip();
+  ctx.save();ctx.beginPath();ctx.rect(0,cr.y-R*0.8,W,cr.h+R*4.4);ctx.clip();
   const sq=1+c.flip*0.25;ctx.translate(cx,cy);ctx.scale(1/sq,sq);
-  if(c.mode==='chicken')drawChicken(0,0,R,c.look);else drawPerson(0,0,R,c.look,c.mode);
+  if(c.mode==='chicken'){if(RAT_PIC.ready){const h=R*4.9,w=h*RAT_PIC.width/RAT_PIC.height;ctx.imageSmoothingEnabled=true;ctx.drawImage(RAT_PIC,-w/2,-R*1.2,w,h);}else drawChicken(0,0,R,c.look);}else drawPerson(0,0,R,c.look,c.mode);
   ctx.restore();
+  const sp=c.sprite||'sick';if(c.mode==='sick'&&personReady[sp])placeRecipe(cx,cy,R,PERSON_IMG[sp],PARCH[sp]);else{unplaceRecipe();$('recipe').style.visibility=c.mode==='sick'?'':'hidden';}
   const pr=PZ.rects.pot, pc={x:pr.x+pr.w/2,y:pr.y+pr.h*0.32}, pw=Math.min(pr.w*0.36,pr.h*0.85);
   const shake=PZ.phase==='brewing'?Math.sin(G.clock*40)*3:0;
   if(CAULDRON_PIC.ready){
@@ -1257,6 +1277,7 @@ PERSON_IMG.happyMan.onload=()=>{personReady.happyMan=true;};PERSON_IMG.happyMan.
 PERSON_IMG.sick.onload=()=>{personReady.sick=true;};PERSON_IMG.sick.src='art/customer-sick.png';
 PERSON_IMG.sickMan.onload=()=>{personReady.sickMan=true;};PERSON_IMG.sickMan.src='art/customer-sick-man.png';
 PERSON_IMG.happy.onload=()=>{personReady.happy=true;};PERSON_IMG.happy.src='art/customer-happy.png';
+const RAT_PIC=new Image();RAT_PIC.ready=false;RAT_PIC.onload=()=>{RAT_PIC.ready=true;};RAT_PIC.src='art/rat.png';
 function drawPerson(x,y,R,look,mode){
   const sick=mode==='sick',man=!!(PZ.cur&&PZ.cur.sprite==='sickMan'),key=sick?((PZ.cur&&PZ.cur.sprite)||'sick'):(man?'happyMan':'happy');
   if(personReady[key]){const I=PERSON_IMG[key],h=R*4.9,w=h*I.width/I.height;
@@ -2432,11 +2453,6 @@ if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>{});
 loadProgress();showProgressLine();
 requestAnimationFrame(frame);
 </script>
-
-
-
-
-
 
 </body>
 </html>
