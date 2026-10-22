@@ -10,6 +10,7 @@
 <meta charset="utf-8">
 <meta charset="utf-8">
 <meta charset="utf-8">
+<meta charset="utf-8">
 <title>Witchity Witch Witch Which Way Do I Go</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -101,6 +102,11 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-acti
 .board small{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:rgba(246,239,255,.55);font-weight:600}
 .fline{font:700 34px/1.15 var(--body);letter-spacing:.06em;text-shadow:0 2px 0 rgba(0,0,0,.6);font-variant-numeric:tabular-nums}
 #cauldronSpot{flex:0 0 auto;height:min(20vh,140px)}
+/* the prescription: the customer holds it up, so it sits over the scroll in their picture */
+#recipe{position:relative;z-index:2;margin:-74px 14px 0;background:#f3e6c4;color:#2a1608;border:5px solid #7a4e2a;border-radius:14px;padding:8px 14px 10px;box-shadow:0 4px 0 rgba(0,0,0,.4);gap:0}
+#recipe small{color:#7a4e2a;font-weight:700}
+#recipe .fline{-webkit-text-stroke:1.5px #3a2010;paint-order:stroke fill;padding:4px 0;text-shadow:none}
+#recipe .fline+.fline{position:relative;margin-top:6px;padding-top:14px;border-top:3px dashed #7a4e2a}
 #dropTally{display:flex;gap:4px;justify-content:center;flex-wrap:wrap;min-height:14px}
 #dropTally i{width:12px;height:12px;border-radius:50%;border:1.5px solid rgba(0,0,0,.5)}
 #shelf{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
@@ -250,8 +256,8 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-acti
   <section id="potion" hidden aria-label="Potion Shop">
     <div class="phead"><h2>Potion Shop</h2><div id="pInfo"></div></div>
     <div id="custSpot"></div>
-    <div id="bubble"></div>
     <div class="board" id="recipe"></div>
+    <div id="bubble"></div>
     <div id="cauldronSpot"></div>
     <div id="dropTally" aria-live="polite"></div>
     <div id="shelf"></div>
@@ -1101,11 +1107,11 @@ function shopPalette(){return potionLevelCfg().colors.split('');}
 function nextCustomer(){
   let pool=POTION.folks.filter(f=>!PZ.usedFolks.includes(f[0])); if(!pool.length){PZ.usedFolks=[];pool=POTION.folks;}
   const f=pool[rint(0,pool.length-1)]; PZ.usedFolks.push(f[0]);
-  PZ.cur={name:f[0],ailment:f[1],look:randomLook(),recipe:makeRecipe(potionLevelCfg(),shopPalette()),mode:'sick',enter:0,flip:0};
+  PZ.cur={name:f[0],ailment:f[1],look:randomLook(),recipe:makeRecipe(potionLevelCfg(),shopPalette()),mode:'sick',enter:0,flip:0,sprite:Math.random()<0.5?'sick':'sickMan'};
   PZ.added=[];PZ.phase='mix';PZ.t=0;PZ.flights=[];
   $('pInfo').textContent=G.practice?`Practice · Potion level ${G.potionLvl+1} · ${PZ.healed} healed`:`Potion level ${G.potionLvl+1} · Customer ${PZ.idx+1} of ${POTION.customers}`;
   $('bubble').textContent=`${PZ.cur.name} ${PZ.cur.ailment}! Can you mix a potion?`;
-  $('recipe').innerHTML=`<small>Recipe</small>`+PZ.cur.recipe.map(l=>`<div class="fline" style="color:${CONFIG.colors[l.c].fill};font-size:${l.text.length>13?24:l.text.length>9?29:34}px">${l.text}</div>`).join('');
+  $('recipe').innerHTML=`<small>Prescription</small>`+PZ.cur.recipe.map(l=>`<div class="fline" style="color:${CONFIG.colors[l.c].fill};font-size:${l.text.length>13?24:l.text.length>9?29:34}px">${l.text}</div>`).join('');
   $('shelf').innerHTML='';
   shopPalette().forEach(c=>{const col=CONFIG.colors[c],b=document.createElement('button');b.type='button';b.id='bottle'+c;b.setAttribute('aria-label',`Add a ${col.name} drop`);
     b.innerHTML=bottlePicHTML(c)||`<svg viewBox="0 0 40 56" aria-hidden="true"><path d="M15 6h10v9c7 3 11 9 11 17 0 12-7 20-16 20S4 44 4 32c0-8 4-14 11-17z" fill="rgba(246,239,255,.12)" stroke="#f6efff" stroke-width="2"/><path d="M5.5 31c0 11 6 19 14.5 19s14.5-8 14.5-19z" fill="${col.fill}"/><circle cx="14" cy="38" r="2.5" fill="rgba(255,255,255,.6)"/><rect x="13" y="2" width="14" height="7" rx="2" fill="#8a5a30"/></svg>`;
@@ -1245,11 +1251,12 @@ const BOTTLE_PIC={};
 ['R','G','Y','B','P'].forEach(k=>{const I=new Image();BOTTLE_PIC[k]={img:I,ready:false};I.onload=()=>{BOTTLE_PIC[k].ready=true;};I.src='art/potion-'+k+'.png';});
 function bottlePicHTML(c){const p=BOTTLE_PIC[c];return p&&p.ready?`<img class="bpic" src="${p.img.src}" alt="">`:null;}
 // customer pictures: sick while waiting for the potion, happy once healed. Drawn shapes are the fallback.
-const PERSON_IMG={sick:new Image(),happy:new Image()},personReady={sick:false,happy:false};
+const PERSON_IMG={sick:new Image(),sickMan:new Image(),happy:new Image()},personReady={sick:false,sickMan:false,happy:false};
 PERSON_IMG.sick.onload=()=>{personReady.sick=true;};PERSON_IMG.sick.src='art/customer-sick.png';
+PERSON_IMG.sickMan.onload=()=>{personReady.sickMan=true;};PERSON_IMG.sickMan.src='art/customer-sick-man.png';
 PERSON_IMG.happy.onload=()=>{personReady.happy=true;};PERSON_IMG.happy.src='art/customer-happy.png';
 function drawPerson(x,y,R,look,mode){
-  const sick=mode==='sick',key=sick?'sick':'happy';
+  const sick=mode==='sick',key=sick?((PZ.cur&&PZ.cur.sprite)||'sick'):'happy';
   if(personReady[key]){const I=PERSON_IMG[key],h=R*4.9,w=h*I.width/I.height;
     ctx.imageSmoothingEnabled=true;ctx.drawImage(I,x-w/2,y-R*1.2,w,h);return;}
   ctx.fillStyle=look.shirt;ctx.beginPath();ctx.ellipse(x,y+R*2.1,R*1.35,R*1.2,0,PI,0);ctx.lineTo(x+R*1.35,y+R*3);ctx.lineTo(x-R*1.35,y+R*3);ctx.fill();
@@ -2423,6 +2430,7 @@ if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>{});
 loadProgress();showProgressLine();
 requestAnimationFrame(frame);
 </script>
+
 
 
 
