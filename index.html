@@ -280,7 +280,7 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-acti
   </div>
 
   <section id="mush" hidden aria-label="Mushroom Picking">
-    <div class="phead"><h2>Mushroom Picking</h2><div id="mInfo"></div></div>
+    <div class="phead"><h2>Forest Gathering</h2><div id="mInfo"></div></div>
     <div class="mtop">
       <div class="mcard"><small>Find this one</small><div id="mTarget"></div></div>
       <div class="mbasket"><small>Basket</small><div id="mBasket"></div>
@@ -1199,9 +1199,8 @@ function mixColor(a){
 /* ---------- potion shop drawing ---------- */
 // Prescription sits on the parchment the old man holds (fractions of his picture)
 const PARCH={sick:{l:0.129,r:0.876,t:0.682,b:0.932},sickMan:{l:0.116,r:0.882,t:0.695,b:0.96}};
-function placeRecipe(x,y,R,I,P){
+function placeRecipe(ox,oy,w,h,P){
   const el=$('recipe');if(!el)return;
-  const h=R*4.9,w=h*I.width/I.height,ox=x-w/2,oy=y-R*1.2;
   const pw=w*(P.r-P.l),ph=h*(P.b-P.t);
   // canvas coords -> offset parent (#potion) coords
   const cb=cv.getBoundingClientRect(),pb=$('potion').getBoundingClientRect();
@@ -1216,6 +1215,13 @@ function unplaceRecipe(){
   const el=$('recipe');if(!el||!el.classList.contains('overlay'))return;
   el.classList.remove('overlay');el.style.cssText='';
 }
+const COUNTER_AT=0.16;
+// wooden counter: the customer stands behind it, the cauldron sits in front
+function drawCounter(y){
+  ctx.fillStyle='#4a2e18';ctx.fillRect(0,y,W,22);
+  ctx.fillStyle='#8a5a30';ctx.fillRect(0,y,W,9);
+  ctx.fillStyle='#b07a44';ctx.fillRect(0,y,W,2);
+}
 function renderPotion(){
   // shop wall, shelves of jars, a little window
   let g=ctx.createLinearGradient(0,0,0,H);g.addColorStop(0,'#2a1830');g.addColorStop(1,'#1a0f14');ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
@@ -1226,14 +1232,25 @@ function renderPotion(){
     for(let x=10;x<W-20;x+=26+rnd()*18){if(rnd()<0.25)continue;const h=14+rnd()*16,w=10+rnd()*8;ctx.globalAlpha=0.55;
       ctx.fillStyle=jarCols[Math.floor(rnd()*jarCols.length)];ctx.fillRect(x,y-h*0.6,w,h*0.6);ctx.fillStyle='rgba(246,239,255,.35)';ctx.fillRect(x,y-h,w,h*0.4);ctx.globalAlpha=1;}});
   if(!PZ.rects||!PZ.cur)return;
-  // customer
-  const cr=PZ.rects.cust, c=PZ.cur, R=Math.min(cr.h*0.28,cr.w*0.17);
-  const ease=1-Math.pow(1-c.enter,3), cx=cr.x+cr.w/2-(1-ease)*cr.w*0.7, cy=cr.y+cr.h*0.42+Math.sin(G.clock*2)*2;
-  ctx.save();ctx.beginPath();ctx.rect(0,cr.y-R*0.8,W,cr.h+R*4.4);ctx.clip();
-  const sq=1+c.flip*0.25;ctx.translate(cx,cy);ctx.scale(1/sq,sq);
-  if(c.mode==='chicken'){if(RAT_PIC.ready){const h=R*4.9,w=h*RAT_PIC.width/RAT_PIC.height;ctx.imageSmoothingEnabled=true;ctx.drawImage(RAT_PIC,-w/2,-R*1.2,w,h);}else drawChicken(0,0,R,c.look);}else drawPerson(0,0,R,c.look,c.mode);
-  ctx.restore();
-  const sp=c.sprite||'sick';if(c.mode==='sick'&&personReady[sp])placeRecipe(cx,cy,R,PERSON_IMG[sp],PARCH[sp]);else{unplaceRecipe();$('recipe').style.visibility=c.mode==='sick'?'':'hidden';}
+  // customer: picture fills the shop width and stands on the counter
+  const cr=PZ.rects.cust, c=PZ.cur, pr0=PZ.rects.pot, R=Math.min(cr.h*0.28,cr.w*0.17);
+  const ease=1-Math.pow(1-c.enter,3), slide=(1-ease)*W*0.7;
+  const sp=c.sprite||'sick', key=c.mode==='sick'?sp:(sp==='sickMan'?'happyMan':'happy');
+  const counterY=pr0.y+pr0.h*COUNTER_AT;
+  const pic=c.mode==='chicken'?(RAT_PIC.ready?RAT_PIC:null):(personReady[key]?PERSON_IMG[key]:null);
+  if(pic){
+    const w=Math.min(W*0.94,counterY*pic.width/pic.height), h=w*pic.height/pic.width;
+    const ox=(W-w)/2-slide, oy=counterY-h;
+    ctx.save();ctx.beginPath();ctx.rect(0,0,W,counterY);ctx.clip();
+    ctx.imageSmoothingEnabled=true;ctx.drawImage(pic,ox,oy,w,h);ctx.restore();
+    if(c.mode==='sick'&&personReady[sp])placeRecipe(ox,oy,w,h,PARCH[sp]);else{unplaceRecipe();$('recipe').style.visibility=c.mode==='sick'?'':'hidden';}
+  }else{
+    unplaceRecipe();$('recipe').style.visibility=c.mode==='sick'?'':'hidden';
+    ctx.save();ctx.translate(cr.x+cr.w/2-slide,cr.y+cr.h*0.42);
+    if(c.mode==='chicken')drawChicken(0,0,R,c.look);else drawPerson(0,0,R,c.look,c.mode);
+    ctx.restore();
+  }
+  drawCounter(counterY);
   const pr=PZ.rects.pot, pc={x:pr.x+pr.w/2,y:pr.y+pr.h*0.32}, pw=Math.min(pr.w*0.36,pr.h*0.85);
   const shake=PZ.phase==='brewing'?Math.sin(G.clock*40)*3:0;
   if(CAULDRON_PIC.ready){
@@ -1562,7 +1579,7 @@ function renderFlight(){
     for(let i=0;i<3;i++){ctx.fillStyle=i<FL.power?'#ffd23a':'rgba(246,239,255,.2)';ctx.save();ctx.translate(W-62+i*20,H-29);star(0,0,8);ctx.restore();}}
 }
 function drawFlightObj(o,b){
-  if(o.kind==='wall'){drawWall(o);return;}
+  if(o.kind==='wall'||o.kind==='rampart'){drawWall(o);return;}
   if(o.kind==='stump'){const S=FLIGHT.stumpArt,q=fproj(o.x,0,o.z);if(!q)return;const w=S.width*q.k,h=stumpReady?w*STUMP_IMG.height/STUMP_IMG.width:w*0.6,fogT=Math.max(0,Math.min(1,o.z/FLIGHT.zFar));
     ctx.save();ctx.globalAlpha=Math.max(0.15,1-fogT*1.1);ctx.translate(q.x,q.y);if(o.flip)ctx.scale(-1,1);
     if(stumpReady){ctx.imageSmoothingEnabled=false;ctx.drawImage(STUMP_IMG,-w/2,-h,w,h);}else{ctx.fillStyle=fogged('#5a3a22',o.z);ctx.fillRect(-w*0.3,-h*0.8,w*0.6,h*0.8);}
@@ -1666,7 +1683,7 @@ const MUSH = {
     { grid:[4,4], shapes:['dome','cone','flat','bell'], colors:'RYBPOG',  sizes:3, dots:[0,5], dotColors:['#ffffff','#1a1028','#ffd23a'], minDiff:1 },
     { grid:[4,5], shapes:['dome','cone','flat','bell'], colors:'RYBPOGT', sizes:3, dots:[0,6], dotColors:['#ffffff','#1a1028','#ffd23a'], minDiff:1 },
   ],
-  intros: ['Find the mushroom that matches the card. Pick as many as you can before time runs out!','Pick as many as you can!'],
+  intros: ['Find the item that matches the card. Mushrooms, gems, slimes and flowers take turns, so keep picking fast!','Pick as many as you can!'],
   dotSpots: {
     dome:[[50,28],[33,42],[67,42],[50,47],[23,54],[77,54]],
     cone:[[50,24],[42,40],[58,40],[50,53],[31,55],[69,55]],
@@ -1681,10 +1698,32 @@ const MUSH = {
   },
   sizes:{small:0.6,medium:0.8,large:1},
 };
+/* Gathering rotates: each correct pick moves to the next kind. Each kind pays out a different material. */
+const GATHER=[
+  {k:'mushroom',name:'Mushroom',mat:null},
+  {k:'gem',name:'Gem',mat:'B'},
+  {k:'slime',name:'Slime',mat:'G'},
+  {k:'flower',name:'Flower',mat:'T'},
+];
+const GEM={dome:'M22 70 L38 22 L62 22 L78 70 L50 90 Z',cone:'M34 90 L50 8 L66 90 Z',flat:'M14 62 L34 30 L66 30 L86 62 L50 84 Z',bell:'M36 90 L30 40 L42 14 L56 30 L70 40 L64 90 Z'};
+const SLIME={dome:'M10 80 Q10 40 50 40 Q90 40 90 80 Q90 92 50 92 Q10 92 10 80 Z',cone:'M14 88 Q20 60 34 46 Q50 30 66 46 Q80 60 86 88 Z',flat:'M4 84 Q8 62 30 58 L70 58 Q92 62 96 84 Z',bell:'M20 88 Q18 34 50 24 Q82 34 80 88 Z'};
+const PETALS={dome:5,cone:7,flat:4,bell:8};
+const SLIME_SPOTS=[[36,56],[64,56],[50,48],[30,72],[70,72],[50,64]];
+const FLOWER_SPOTS=[[50,40],[44,40],[56,40],[50,34],[50,46],[44,46]];
+function itemSVG(m){
+  const c=CONFIG.colors[m.color],sz=MUSH.sizes[m.size],r=4.6;
+  const dd=spots=>spots.slice(0,m.dots).map(([x,y])=>`<circle cx="${x}" cy="${y}" r="${r}" fill="${m.dotColor}" stroke="rgba(0,0,0,.25)" stroke-width="1"/>`).join('');
+  const wrap=b=>`<svg viewBox="0 0 100 100" aria-hidden="true"><g transform="translate(50 94) scale(${sz}) translate(-50 -94)"><ellipse cx="50" cy="94" rx="24" ry="4" fill="rgba(0,0,0,.3)"/>${b}</g></svg>`;
+  if(m.kind==='gem')return wrap(`<path d="${GEM[m.shape]}" fill="${c.fill}" stroke="${c.dark}" stroke-width="2.5" stroke-linejoin="round"/><path d="M50 88 L50 34" stroke="rgba(255,255,255,.35)" stroke-width="2"/>${dd(MUSH.dotSpots.dome)}`);
+  if(m.kind==='slime')return wrap(`<path d="${SLIME[m.shape]}" fill="${c.fill}" stroke="${c.dark}" stroke-width="2.5" stroke-linejoin="round"/><circle cx="40" cy="70" r="5" fill="#fff"/><circle cx="60" cy="70" r="5" fill="#fff"/><circle cx="41" cy="71" r="2.4" fill="#1a1028"/><circle cx="61" cy="71" r="2.4" fill="#1a1028"/>${dd(SLIME_SPOTS)}`);
+  const n=PETALS[m.shape],petals=Array.from({length:n},(_,i)=>{const a=2*Math.PI*i/n-Math.PI/2;return `<circle cx="${(50+Math.cos(a)*17).toFixed(1)}" cy="${(40+Math.sin(a)*17).toFixed(1)}" r="11" fill="${c.fill}" stroke="${c.dark}" stroke-width="2"/>`;}).join('');
+  return wrap(`<path d="M50 54 Q46 74 50 94" stroke="#4f8f3a" stroke-width="4" fill="none"/>${petals}<circle cx="50" cy="40" r="8" fill="#ffd23a"/>${dd(FLOWER_SPOTS)}`);
+}
 const MZ={};
 const mushStage=()=>MUSH.stages[Math.min(MZ.stage,MUSH.stages.length-1)];
 
 function mushSVG(m){
+  if(m.kind&&m.kind!=='mushroom')return itemSVG(m);
   const c=CONFIG.colors[m.color],sz=MUSH.sizes[m.size],r=m.shape==='flat'?4.2:5.2;
   const dots=MUSH.dotSpots[m.shape].slice(0,m.dots).map(([x,y])=>`<circle cx="${x}" cy="${y}" r="${r}" fill="${m.dotColor}" stroke="rgba(0,0,0,.25)" stroke-width="1"/>`).join('');
   return `<svg viewBox="0 0 100 100" aria-hidden="true"><g transform="translate(50 94) scale(${sz}) translate(-50 -94)">
@@ -1717,7 +1756,7 @@ function makePatch(cfg){
 function showMushIntro(){clearFx();$('introDemo').hidden=true;$('goBtn').textContent='Go!';
   G.state='intro';G.introGo=startMush;
   ['potion','shopEnd','endScreen','titleScreen','hud','pad','fireBtn','mush'].forEach(id=>$(id).hidden=true);
-  $('introTitle').textContent='Mushroom Picking';$('introText').textContent=MUSH.intros[G.mushLvl===0?0:1];$('introScreen').hidden=false;
+  $('introTitle').textContent='Forest Gathering';$('introText').textContent=MUSH.intros[G.mushLvl===0?0:1];$('introScreen').hidden=false;
 }
 function startMush(){clearFx();
   Object.assign(MZ,{lanternLeft:SPELLBOOK.lanternUses(spellLv('lantern')),good:0,misses:0,lock:false,t:MUSH.roundTime,stage:Math.min(G.mushLvl,MUSH.stages.length-1),streak:0});
@@ -1725,11 +1764,13 @@ function startMush(){clearFx();
   nextPick();updateLanternBtn();Sfx.startMusic();
 }
 function nextPick(){
-  const cfg=mushStage(),p=makePatch(cfg);Object.assign(MZ,p,{lock:false});
+  const cfg=mushStage(),p=makePatch(cfg),kd=GATHER[MZ.good%GATHER.length];
+  p.target.kind=kd.k;p.cells.forEach(m=>m.kind=kd.k);
+  Object.assign(MZ,p,{lock:false});
   const grid=$('mGrid');grid.style.gridTemplateColumns=`repeat(${cfg.grid[0]},1fr)`;grid.style.gridTemplateRows=`repeat(${cfg.grid[1]},1fr)`;
   $('mTarget').innerHTML=mushSVG(p.target);grid.innerHTML='';
   p.cells.forEach((m,i)=>{const b=document.createElement('button');b.type='button';b.id='mcell'+i;b.innerHTML=mushSVG(m);
-    b.setAttribute('aria-label',`${m.size} ${CONFIG.colors[m.color].name} ${m.shape} mushroom with ${m.dots} dots`);
+    b.setAttribute('aria-label',`${m.size} ${CONFIG.colors[m.color].name} ${m.shape} ${m.kind||'mushroom'} with ${m.dots} dots`);
     b.addEventListener('pointerdown',e=>{e.preventDefault();pickCell(i,b);});
     b.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();pickCell(i,b);}});
     grid.appendChild(b);});
@@ -1738,7 +1779,7 @@ function nextPick(){
 function pickCell(i,b){
   if(G.state!=='mush'||MZ.lock)return;
   if(i===MZ.answer){MZ.lock=true;b.classList.add('right');Sfx.pop();MZ.good++;MZ.streak++;
-    {const c=MZ.target.color||'R';earn('mat',1,c);if(!G.practice&&MATS[c])floatText('+1 '+MATS[c].name,W/2,H*0.2,CONFIG.colors[c]?CONFIG.colors[c].fill:'#fff');}
+    {const kd=GATHER.find(g=>g.k===MZ.target.kind)||GATHER[0],c=kd.mat||MZ.target.color||'R';earn('mat',1,c);if(!G.practice&&MATS[c])floatText('+1 '+MATS[c].name,W/2,H*0.2,CONFIG.colors[c]?CONFIG.colors[c].fill:'#fff');}
     const basket=$('mBasket');basket.insertAdjacentHTML('beforeend',mushSVG(MZ.target));while(basket.children&&basket.children.length>12)basket.removeChild(basket.firstChild);
     if(MZ.streak>=MUSH.stagePicks&&MZ.stage<MUSH.stages.length-1){MZ.stage++;MZ.streak=0;}
     setTimeout(()=>{if(G.state==='mush')nextPick();},350);}
@@ -2248,8 +2289,10 @@ function startSiege(){clearFx();
   ['introScreen','endScreen','titleScreen','reportScreen','partyScreen','gradScreen','spellCard','sbook','mush','potion','shopEnd'].forEach(id=>$(id).hidden=true);
   $('hud').hidden=true;$('fireBtn').hidden=true;$('pad').hidden=true;$('hearts').hidden=true;$('spellBar').hidden=true;$('book').classList.add('hidden');
   FL.banner={text:'Dodge the castle walls!',t:2.6};Sfx.startMusic();}
-function startFly(next){clearFx();G.state='siege';SG.phase='fly';SG.next=next;SG.t=0;FL.objs=[];
-  FL.banner={text:next===0?'Into the castle!':'Fly to the next tower!',t:2.4};}
+/* Between towers: fly along the castle top and steer through the windows between the ramparts.
+   Windows can be low, middle or high, so sometimes you go around, through, or above. */
+function startFly(next){clearFx();G.state='siege';SG.phase='gate';SG.next=next;SG.t=0;SG.spawned=0;SG.spawnT=0.6;SG.gateTotal=5+2*next;FL.objs=[];
+  FL.banner={text:next===0?'Into the castle! Fly through the windows.':'Fly through the windows to the next tower!',t:2.6};}
 function startHome(){G.state='siege';SG.phase='home';SG.t=0;FL.objs=[];FL.banner={text:'Back to school!',t:3};}
 function startTower(i){clearFx();G.state='tower';SG.tower=i;SG.phase='tower';SG.done=false;SG.letters=towerLetters(i);FL.banner=null;
   // monsters stand on two evenly spaced rings around the tower roof
@@ -2290,6 +2333,17 @@ function updateSiege(dt){
         else if(FL.invuln<=0){FL.invuln=1;FL.hits++;G.shake=reduceMotion?0.2:1;Sfx.bonk();floatText('Oof!',W/2,H*0.55,'#ff4a3d',true);}}}
     FL.objs=FL.objs.filter(o=>o.z>-3);
     if(SG.spawned>=SG.wallsTotal&&!FL.objs.length)startFly(0);
+  }else if(SG.phase==='gate'){
+    SG.spawnT-=dt;
+    if(SG.spawned<SG.gateTotal&&SG.spawnT<=0){SG.spawnT=1.5;SG.spawned++;
+      FL.objs.push({kind:'rampart',z:FLIGHT.zFar,gap:frand(-2.2,2.2),gw:1.5,gy:[0.9,1.7,2.5][Math.floor(Math.random()*3)],gh:1.2,done:false});}
+    for(const o of FL.objs){const pz=o.z;o.z-=11*dt;
+      if(!o.done&&pz>0&&o.z<=0){o.done=true;
+        const through=Math.abs(FL.px-o.gap)<=o.gw/2&&Math.abs(FL.py-o.gy)<=o.gh/2;
+        if(through){Sfx.plip();floatText('Whoosh!',W/2,H*0.55,'#ffd23a');}
+        else if(FL.invuln<=0){FL.invuln=1;FL.hits++;G.shake=reduceMotion?0.2:1;Sfx.bonk();floatText('Oof!',W/2,H*0.55,'#ff4a3d',true);}}}
+    FL.objs=FL.objs.filter(o=>o.z>-3);
+    if(SG.spawned>=SG.gateTotal&&!FL.objs.length)startTower(SG.next);
   }else if(SG.phase==='fly'){if(SG.t>=2.4)startTower(SG.next);}
   else if(SG.phase==='home'){if(SG.t>=3.2)finishSiege();}
 }
@@ -2304,18 +2358,21 @@ function finishSiege(){G.state='attackEnd';G.keep.attacks++;earn('coins',5);save
 function drawWall(o){
   const TOP_H=3.4,CAP=4.1;
   const face=fogged('#8c8497',o.z),cap=fogged('#5d5667',o.z),line=fogged('#3a3446',o.z);
-  const seg=(x0,x1)=>{
-    const a=fproj(x0,0,o.z),b=fproj(x1,0,o.z),c=fproj(x1,TOP_H,o.z),d=fproj(x0,TOP_H,o.z);
+  // one solid piece of wall from height y0 to y1 between x0 and x1; battlements on top
+  const seg=(x0,x1,y0,y1)=>{
+    const a=fproj(x0,y0,o.z),b=fproj(x1,y0,o.z),c=fproj(x1,y1,o.z),d=fproj(x0,y1,o.z);
     if(!a||!b||!c||!d)return;
     ctx.fillStyle=face;ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.lineTo(c.x,c.y);ctx.lineTo(d.x,d.y);ctx.closePath();ctx.fill();
     ctx.strokeStyle=line;ctx.lineWidth=Math.max(1,b.k*0.05);
-    for(let y=0.9;y<TOP_H;y+=0.9){const p=fproj(x0,y,o.z),q=fproj(x1,y,o.z);if(p&&q){ctx.beginPath();ctx.moveTo(p.x,p.y);ctx.lineTo(q.x,q.y);ctx.stroke();}}
-    ctx.fillStyle=cap;
-    for(let x=x0;x<x1-0.2;x+=0.9){const w=Math.min(0.45,x1-x),pts=[fproj(x,TOP_H,o.z),fproj(x+w,TOP_H,o.z),fproj(x+w,CAP,o.z),fproj(x,CAP,o.z)];
-      if(pts.every(Boolean)){ctx.beginPath();ctx.moveTo(pts[0].x,pts[0].y);pts.slice(1).forEach(q=>ctx.lineTo(q.x,q.y));ctx.closePath();ctx.fill();}}
+    for(let y=0.9;y<TOP_H;y+=0.9){if(y<=y0||y>=y1)continue;const p=fproj(x0,y,o.z),q=fproj(x1,y,o.z);if(p&&q){ctx.beginPath();ctx.moveTo(p.x,p.y);ctx.lineTo(q.x,q.y);ctx.stroke();}}
+    if(y1>=TOP_H){ctx.fillStyle=cap;
+      for(let x=x0;x<x1-0.2;x+=0.9){const w=Math.min(0.45,x1-x),pts=[fproj(x,TOP_H,o.z),fproj(x+w,TOP_H,o.z),fproj(x+w,CAP,o.z),fproj(x,CAP,o.z)];
+        if(pts.every(Boolean)){ctx.beginPath();ctx.moveTo(pts[0].x,pts[0].y);pts.slice(1).forEach(q=>ctx.lineTo(q.x,q.y));ctx.closePath();ctx.fill();}}}
   };
-  seg(-3.8,o.gap-o.gw/2);seg(o.gap+o.gw/2,3.8);
-  const g=fproj(o.gap,0.25,o.z);
+  const L=o.gap-o.gw/2,Rr=o.gap+o.gw/2;
+  seg(-3.8,L,0,TOP_H);seg(Rr,3.8,0,TOP_H);
+  if(o.gy!==undefined){seg(L,Rr,0,o.gy-o.gh/2);seg(L,Rr,o.gy+o.gh/2,TOP_H);}
+  const g=fproj(o.gap,o.gy!==undefined?o.gy:0.25,o.z);
   if(g&&!o.done){ctx.fillStyle='rgba(255,210,58,.35)';ctx.beginPath();ctx.arc(g.x,g.y,Math.max(4,g.k*0.25),0,7);ctx.fill();}
 }
 function renderTower(){
@@ -2334,7 +2391,7 @@ function renderTower(){
     ctx.fillStyle=col.fill;ctx.beginPath();ctx.arc(0,0,r,0,7);ctx.fill();
     ctx.fillStyle='#fff';[-1,1].forEach(d=>{ctx.beginPath();ctx.arc(d*r*0.35,-r*0.25,r*0.16,0,7);ctx.fill();});
     ctx.fillStyle='#1a1028';[-1,1].forEach(d=>{ctx.beginPath();ctx.arc(d*r*0.35,-r*0.22,r*0.07,0,7);ctx.fill();});
-    ctx.font=`${Math.round(r*0.85)}px ${DISPLAY_FONT}`;ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.font=`700 ${Math.round(r*0.85)}px Arial, Helvetica, sans-serif`;ctx.textAlign='center';ctx.textBaseline='middle';
     ctx.lineWidth=Math.max(2,r*0.1);ctx.strokeStyle='#1a1028';ctx.strokeText(m.L,0,r*0.5);ctx.fillStyle='#fff';ctx.fillText(m.L,0,r*0.5);
     ctx.restore();}
   const u=s*0.07,wx=W/2,wy=H*0.9;
