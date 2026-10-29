@@ -91,7 +91,7 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-acti
 .phead{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
 .phead h2{margin:0;font-family:var(--display);font-size:26px;font-weight:400;color:var(--ink);text-shadow:0 2px 0 #000}
 #pInfo{font-size:13px;font-weight:600;color:var(--muted);text-align:right;font-variant-numeric:tabular-nums}
-#custSpot{flex:1 1 auto;min-height:110px}
+#custSpot{flex:1 1 auto;min-height:70px}
 #bubble{position:absolute!important;left:50%;transform:translateX(-50%);top:calc(var(--bubbleTop,40px));z-index:3;width:max-content;max-width:min(34ch,88%);align-self:center;background:var(--ink);color:#1b0f30;border-radius:16px;padding:8px 14px;font-weight:600;font-size:15px;line-height:1.3;text-align:center;position:relative;text-wrap:balance}
 #bubble::before{content:"";position:absolute;left:50%;top:-8px;margin-left:-8px;border:8px solid transparent;border-top:0;border-bottom-color:var(--ink)}
 .board{background:#1d2b25;border:6px solid #7a4e2a;border-radius:12px;padding:8px 14px 10px;box-shadow:inset 0 0 24px rgba(0,0,0,.5),0 4px 0 rgba(0,0,0,.4);display:flex;flex-direction:column;align-items:center;gap:2px}
@@ -111,11 +111,11 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-acti
 #dropTally{display:flex;gap:4px;justify-content:center;flex-wrap:wrap;min-height:14px}
 #dropTally i{width:12px;height:12px;border-radius:50%;border:1.5px solid rgba(0,0,0,.5)}
 #shelf{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
-#shelf button{width:68px;height:82px;padding:0;background:rgba(36,23,63,.85);border:2px solid rgba(246,239,255,.2);border-radius:14px;cursor:pointer;touch-action:manipulation;box-shadow:0 4px 0 rgba(0,0,0,.45)}
+#shelf button{width:clamp(52px,15vh,68px);height:clamp(64px,11vh,82px);padding:0;background:rgba(36,23,63,.85);border:2px solid rgba(246,239,255,.2);border-radius:14px;cursor:pointer;touch-action:manipulation;box-shadow:0 4px 0 rgba(0,0,0,.45)}
 #shelf button:active{transform:translateY(3px);box-shadow:0 1px 0 rgba(0,0,0,.45)}
 #shelf button:focus-visible{outline:3px solid var(--yellow);outline-offset:2px}
 #shelf svg{width:40px;height:56px;display:block;margin:auto}
-#shelf .bpic{width:auto;height:64px;max-width:58px;display:block;margin:auto;object-fit:contain}
+#shelf .bpic{width:auto;height:clamp(44px,8.5vh,64px);max-width:58px;display:block;margin:auto;object-fit:contain}
 .pbtns{display:flex;gap:10px;justify-content:center}
 .pbtns .btn{padding:12px 24px;font-size:18px}
 .btn:disabled{opacity:.5}
@@ -1249,8 +1249,8 @@ function renderPotion(){
   const counterY=pr0.y+pr0.h*COUNTER_AT;
   const pic=c.mode==='chicken'?(RAT_PIC.ready?RAT_PIC:null):(personReady[src]?PERSON_IMG[src]:null);
   if(pic){
-    const k=c.mode==='chicken'?0.75:1;
-    const w=Math.min(W*0.94,counterY*pic.width/pic.height)*k, h=w*pic.height/pic.width;
+    // every customer stands the same height (rat a little smaller)
+    const h=Math.min(counterY*0.85,300)*(c.mode==='chicken'?0.75:1), w=h*pic.width/pic.height;
     const ox=(W-w)/2-slide, oy=counterY-h;
     ctx.save();ctx.beginPath();ctx.rect(0,0,W,counterY);ctx.clip();
     ctx.imageSmoothingEnabled=true;ctx.drawImage(pic,ox,oy,w,h);ctx.restore();
