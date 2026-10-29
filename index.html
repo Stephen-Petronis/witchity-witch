@@ -101,7 +101,7 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-acti
 /* the prescription: the customer holds it up, so it sits over the scroll in their picture */
 #recipe{position:relative;z-index:2;margin:6px 14px 0;background:#f3e6c4;color:#2a1608;border:5px solid #7a4e2a;border-radius:14px;padding:8px 14px 10px;box-shadow:0 4px 0 rgba(0,0,0,.4);gap:0}
 #recipe.overlay{position:absolute;margin:0;box-sizing:border-box;border:0;background:none;box-shadow:none;padding:0;transform-origin:0 0;z-index:2;align-items:center}
-#recipe.overlay{bottom:auto!important;right:auto!important;display:flex!important;flex-direction:row!important;flex-wrap:nowrap!important;justify-content:center;align-items:center;width:max-content!important;height:auto!important;gap:0;white-space:nowrap}
+#recipe.overlay{background:#f3e6c4!important;border-radius:8px;bottom:auto!important;right:auto!important;display:flex!important;flex-direction:row!important;flex-wrap:nowrap!important;justify-content:center;align-items:center;width:max-content!important;height:auto!important;gap:0;white-space:nowrap}
 #recipe.overlay small{display:none}
 #recipe.overlay .fline{padding:0 12px}
 #recipe.overlay .fline+.fline{margin-top:0;padding-top:0;border-top:0;border-left:3px dashed #7a4e2a;padding-left:12px}
@@ -111,11 +111,11 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-acti
 #dropTally{display:flex;gap:4px;justify-content:center;flex-wrap:wrap;min-height:14px}
 #dropTally i{width:12px;height:12px;border-radius:50%;border:1.5px solid rgba(0,0,0,.5)}
 #shelf{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
-#shelf button{width:54px;height:66px;padding:0;background:rgba(36,23,63,.85);border:2px solid rgba(246,239,255,.2);border-radius:14px;cursor:pointer;touch-action:manipulation;box-shadow:0 4px 0 rgba(0,0,0,.45)}
+#shelf button{width:68px;height:82px;padding:0;background:rgba(36,23,63,.85);border:2px solid rgba(246,239,255,.2);border-radius:14px;cursor:pointer;touch-action:manipulation;box-shadow:0 4px 0 rgba(0,0,0,.45)}
 #shelf button:active{transform:translateY(3px);box-shadow:0 1px 0 rgba(0,0,0,.45)}
 #shelf button:focus-visible{outline:3px solid var(--yellow);outline-offset:2px}
 #shelf svg{width:40px;height:56px;display:block;margin:auto}
-#shelf .bpic{width:auto;height:50px;max-width:46px;display:block;margin:auto;object-fit:contain}
+#shelf .bpic{width:auto;height:64px;max-width:58px;display:block;margin:auto;object-fit:contain}
 .pbtns{display:flex;gap:10px;justify-content:center}
 .pbtns .btn{padding:12px 24px;font-size:18px}
 .btn:disabled{opacity:.5}
@@ -1108,7 +1108,7 @@ function shopPalette(){return potionLevelCfg().colors.split('');}
 function nextCustomer(){
   let pool=POTION.folks.filter(f=>!PZ.usedFolks.includes(f[0])); if(!pool.length){PZ.usedFolks=[];pool=POTION.folks;}
   const f=pool[rint(0,pool.length-1)]; PZ.usedFolks.push(f[0]);
-  PZ.cur={name:f[0],ailment:f[1],look:randomLook(),recipe:makeRecipe(potionLevelCfg(),shopPalette()),mode:'sick',enter:0,flip:0,sprite:(PZ.lastSprite==='sick'?'sickMan':'sick')};PZ.lastSprite=PZ.cur.sprite;
+  PZ.cur={name:f[0],ailment:f[1],look:randomLook(),recipe:makeRecipe(potionLevelCfg(),shopPalette()),mode:'sick',enter:0,flip:0,cast:pickCast()};
   PZ.added=[];PZ.phase='mix';PZ.t=0;PZ.flights=[];
   $('pInfo').textContent=G.practice?`Practice · Potion level ${G.potionLvl+1} · ${PZ.healed} healed`:`Potion level ${G.potionLvl+1} · Customer ${PZ.idx+1} of ${POTION.customers}`;
   $('bubble').textContent=`${PZ.cur.name} ${PZ.cur.ailment}! Can you mix a potion?`;
@@ -1199,6 +1199,16 @@ function mixColor(a){
 /* ---------- potion shop drawing ---------- */
 // Prescription sits on the parchment the old man holds (fractions of his picture)
 const PARCH={sick:{l:0.129,r:0.876,t:0.682,b:0.932},sickMan:{l:0.116,r:0.882,t:0.695,b:0.96}};
+// the realistic customers; each has a sick and a healed picture. Scroll spot = where the prescription sits.
+const CAST=[
+  {sick:'art/cast/sick-man.png',happy:'art/cast/happy-man.png',par:null},
+  {sick:'art/cast/sick-woman.png',happy:'art/cast/happy-woman.png',par:null},
+  {sick:'art/cast/sick-oldman.png',happy:'art/cast/happy-oldman.png',par:{l:0.156,r:0.901,t:0.705,b:0.994}},
+  {sick:'art/cast/sick-boy.png',happy:'art/cast/happy-boy.png',par:null},
+  {sick:'art/cast/sick-girl.png',happy:'art/cast/happy-girl.png',par:null},
+];
+const DEFAULT_CARD={l:0.16,r:0.84,t:0.78,b:0.97};
+function pickCast(){let i;do{i=Math.floor(Math.random()*CAST.length);}while(i===PZ.lastCast&&CAST.length>1);PZ.lastCast=i;return i;}
 function placeRecipe(ox,oy,w,h,P){
   const el=$('recipe');if(!el)return;
   const pw=w*(P.r-P.l),ph=h*(P.b-P.t);
@@ -1235,15 +1245,16 @@ function renderPotion(){
   // customer: picture fills the shop width and stands on the counter
   const cr=PZ.rects.cust, c=PZ.cur, pr0=PZ.rects.pot, R=Math.min(cr.h*0.28,cr.w*0.17);
   const ease=1-Math.pow(1-c.enter,3), slide=(1-ease)*W*0.7;
-  const sp=c.sprite||'sick', key=c.mode==='sick'?sp:(sp==='sickMan'?'happyMan':'happy');
+  const cast=CAST[c.cast||0], src=c.mode==='sick'?cast.sick:cast.happy;
   const counterY=pr0.y+pr0.h*COUNTER_AT;
-  const pic=c.mode==='chicken'?(RAT_PIC.ready?RAT_PIC:null):(personReady[key]?PERSON_IMG[key]:null);
+  const pic=c.mode==='chicken'?(RAT_PIC.ready?RAT_PIC:null):(personReady[src]?PERSON_IMG[src]:null);
   if(pic){
-    const w=Math.min(W*0.94,counterY*pic.width/pic.height), h=w*pic.height/pic.width;
+    const k=c.mode==='chicken'?0.75:1;
+    const w=Math.min(W*0.94,counterY*pic.width/pic.height)*k, h=w*pic.height/pic.width;
     const ox=(W-w)/2-slide, oy=counterY-h;
     ctx.save();ctx.beginPath();ctx.rect(0,0,W,counterY);ctx.clip();
     ctx.imageSmoothingEnabled=true;ctx.drawImage(pic,ox,oy,w,h);ctx.restore();
-    if(c.mode==='sick'&&personReady[sp])placeRecipe(ox,oy,w,h,PARCH[sp]);else{unplaceRecipe();$('recipe').style.visibility=c.mode==='sick'?'':'hidden';}
+    if(c.mode==='sick'&&personReady[cast.sick])placeRecipe(ox,oy,w,h,cast.par||DEFAULT_CARD);else{unplaceRecipe();$('recipe').style.visibility=c.mode==='sick'?'':'hidden';}
   }else{
     unplaceRecipe();$('recipe').style.visibility=c.mode==='sick'?'':'hidden';
     ctx.save();ctx.translate(cr.x+cr.w/2-slide,cr.y+cr.h*0.42);
@@ -1289,11 +1300,8 @@ const BOTTLE_PIC={};
 ['R','G','Y','B','P'].forEach(k=>{const I=new Image();BOTTLE_PIC[k]={img:I,ready:false};I.onload=()=>{BOTTLE_PIC[k].ready=true;};I.src='art/potion-'+k+'.png';});
 function bottlePicHTML(c){const p=BOTTLE_PIC[c];return p&&p.ready?`<img class="bpic" src="${p.img.src}" alt="">`:null;}
 // customer pictures: sick while waiting for the potion, happy once healed. Drawn shapes are the fallback.
-const PERSON_IMG={sick:new Image(),sickMan:new Image(),happy:new Image(),happyMan:new Image()},personReady={sick:false,sickMan:false,happy:false,happyMan:false};
-PERSON_IMG.happyMan.onload=()=>{personReady.happyMan=true;};PERSON_IMG.happyMan.src='art/customer-happy-man.png';
-PERSON_IMG.sick.onload=()=>{personReady.sick=true;};PERSON_IMG.sick.src='art/customer-sick.png';
-PERSON_IMG.sickMan.onload=()=>{personReady.sickMan=true;};PERSON_IMG.sickMan.src='art/customer-sick-man.png';
-PERSON_IMG.happy.onload=()=>{personReady.happy=true;};PERSON_IMG.happy.src='art/customer-happy.png';
+const PERSON_IMG={},personReady={};
+[...new Set(CAST.flatMap(c=>[c.sick,c.happy]))].forEach(src=>{const im=new Image();im.onload=()=>{personReady[src]=true;};im.src=src;PERSON_IMG[src]=im;});
 const RAT_PIC=new Image();RAT_PIC.ready=false;RAT_PIC.onload=()=>{RAT_PIC.ready=true;};RAT_PIC.src='art/rat.png';
 function drawPerson(x,y,R,look,mode){
   const sick=mode==='sick',man=!!(PZ.cur&&PZ.cur.sprite==='sickMan'),key=sick?((PZ.cur&&PZ.cur.sprite)||'sick'):(man?'happyMan':'happy');
@@ -1374,7 +1382,7 @@ const FLIGHT = {
     firefly:  { name:'Firefly Glen',    sky:['#09160e','#24401c'], ground:['#0d1a0f','#1a2e18'], path:'#33331f', fog:[40,70,40],  tree:'#123018', sup:1.3, foe:0.9, pow:1.5 },
     castle:{name:'Castle Walls',sky:['#1b1433','#3a2a5a'],ground:['#1a1a22','#2a2a33'],path:'#3a3a44',fog:[70,60,90],tree:'#222',sup:0,foe:0,pow:0},
   },
-  supplyKinds: ['mushroom','moonflower','feather','starberry'],
+  supplyKinds: ['mushroom','moonflower','feather','starberry','fish'],
   /* Stephen's hand-drawn forest trees. Each tree you dodge (and each side tree) picks one at random.
      trunkX = where the trunk sits across the picture (0 = left edge, 1 = right). size / sideSize = how tall in the world. */
   treeArt: [
@@ -1429,7 +1437,7 @@ function spawnFlight(cfg,dt){
     if(ok&&!(nearFork&&Math.abs(x)<1.6))add({kind:'tree',x,z:Z,h:frand(4.5,6.5),flip:Math.random()<0.5,art:true,v:pickTree()});
   }
   for(let i=tick('sup',cfg.supplies*b.sup);i>0;i--){
-    const sub=FLIGHT.supplyKinds[Math.floor(Math.random()*4)],x=frand(-2.8,2.8),y=frand(0.9,2.5),pat=Math.random();
+    const sub=FLIGHT.supplyKinds[Math.floor(Math.random()*FLIGHT.supplyKinds.length)],x=frand(-2.8,2.8),y=frand(0.9,2.5),pat=Math.random();
     if(pat<0.4)add({kind:'supply',sub,x,y,z:Z});
     else if(pat<0.75)for(let k=0;k<3;k++)add({kind:'supply',sub,x,y,z:Z+k*3});
     else for(let k=0;k<4;k++)add({kind:'supply',sub,x:Math.max(-3,Math.min(3,x-1.5+k)),y:y+Math.sin(k/3*PI)*0.5,z:Z+k*1.5});
@@ -1617,6 +1625,7 @@ function drawFlightObj(o,b){
     if(o.sub==='mushroom'){ctx.fillStyle='#f6efe0';ctx.fillRect(q.x-r*0.25,y,r*0.5,r*0.7);ctx.fillStyle='#ff4a3d';ctx.beginPath();ctx.arc(q.x,y+r*0.05,r*0.8,PI,0);ctx.fill();
       ctx.fillStyle='#fff';[[-0.4,-0.3],[0.1,-0.5],[0.45,-0.2]].forEach(([a,c])=>{ctx.beginPath();ctx.arc(q.x+a*r,y+c*r,r*0.13,0,7);ctx.fill();});}
     else if(o.sub==='moonflower'){ctx.fillStyle='#e8f2ff';for(let i=0;i<5;i++){const a=i/5*PI*2+G.clock;ctx.beginPath();ctx.ellipse(q.x+Math.cos(a)*r*0.45,y+Math.sin(a)*r*0.45,r*0.38,r*0.2,a,0,7);ctx.fill();}ctx.fillStyle='#ffd23a';ctx.beginPath();ctx.arc(q.x,y,r*0.25,0,7);ctx.fill();}
+    else if(o.sub==='fish'){ctx.fillStyle='#4fd2e6';ctx.beginPath();ctx.ellipse(q.x,y,r*0.7,r*0.42,0,0,7);ctx.fill();ctx.beginPath();ctx.moveTo(q.x+r*0.55,y);ctx.lineTo(q.x+r*1.05,y-r*0.42);ctx.lineTo(q.x+r*1.05,y+r*0.42);ctx.fill();ctx.fillStyle='#1a1028';ctx.beginPath();ctx.arc(q.x-r*0.35,y-r*0.08,r*0.1,0,7);ctx.fill();}
     else if(o.sub==='feather'){ctx.save();ctx.translate(q.x,y);ctx.rotate(0.5+Math.sin(G.clock*3)*0.2);ctx.fillStyle='#19d3c5';ctx.beginPath();ctx.ellipse(0,0,r*0.3,r*0.9,0,0,7);ctx.fill();ctx.strokeStyle='#0a6f68';ctx.lineWidth=Math.max(1,r*0.08);ctx.beginPath();ctx.moveTo(0,-r*0.9);ctx.lineTo(0,r*1.1);ctx.stroke();ctx.restore();}
     else{ctx.fillStyle='#a64dff';ctx.beginPath();ctx.arc(q.x,y,r*0.6,0,7);ctx.fill();ctx.fillStyle='#fff';ctx.save();ctx.translate(q.x+r*0.2,y-r*0.2);star(0,0,r*0.25);ctx.restore();}
     return;}
@@ -2159,6 +2168,7 @@ const FOOD={
   moonflower:{name:'Moonflower', hue:270, body:'Glowmoth',    desc:'floaty, with glowing wings'},
   feather:   {name:'Feather',    hue:190, body:'Featherbird', desc:'with a swishy feather tail'},
   starberry: {name:'Starberry',  hue:50,  body:'Sparkspike',  desc:'spiky, with a star crown'},
+  fish:      {name:'Fish',       hue:175, body:'Finwisp',     desc:'finny and bubbly'},
 };
 // wardrobe: three looks per slot, the first one is free and already owned
 const WEAR={
@@ -2195,32 +2205,56 @@ function attackDue(){const t=G.school.term;return t>1&&t<=SCHOOL.terms&&(t-1)%3=
 function petBody(tally){let best='starberry',bn=-1;for(const f of Object.keys(FOOD)){const v=tally[f]||0;if(v>bn){bn=v;best=f;}}return best;}
 function petHue(tally){let x=0,y=0,n=0;for(const f of Object.keys(FOOD)){const w=tally[f]||0,a=FOOD[f].hue*PI/180;x+=Math.cos(a)*w;y+=Math.sin(a)*w;n+=w;}
   return n?((Math.atan2(y,x)*180/PI)+360)%360:200;}
+// every bite is a letter in the pet's serial code, in the order it was fed
+const SERIAL_CODE={mushroom:'M',moonflower:'O',feather:'F',starberry:'S',fish:'I'};
+function serialHash(str){let h=2166136261;for(let i=0;i<str.length;i++){h^=str.charCodeAt(i);h=Math.imul(h,16777619);}return h>>>0;}
+function serialText(seed){return seed.toString(16).toUpperCase().padStart(8,'0').replace(/(....)(....)/,'$1-$2');}
 function feedNest(food){const k=G.keep;if(k.cocoon||!(k.food[food]>0)||k.nest.count>=10)return;
   k.food[food]--;k.nest.food[food]=(k.nest.food[food]||0)+1;k.nest.count++;
-  if(k.nest.count>=10){k.cocoon={food:{...k.nest.food}};k.nest={food:{},count:0};}}
+  k.nest.log=(k.nest.log||[]).concat(SERIAL_CODE[food]);
+  if(k.nest.count>=10){k.cocoon={food:{...k.nest.food},log:k.nest.log.join('')};k.nest={food:{},count:0,log:[]};}}
 // returns a message when a cocoon hatches, or null. A grown-up pet is retired and the next cocoon makes a new one.
-function hatchEgg(){const k=G.keep;if(!k.cocoon)return null;const food=k.cocoon.food;k.cocoon=null;
+function hatchEgg(){const k=G.keep;if(!k.cocoon)return null;const food=k.cocoon.food,code=k.cocoon.log||'';k.cocoon=null;
   const cur=k.pets[k.pets.length-1];
   if(cur&&cur.stage<3){cur.stage++;for(const f in food)cur.tally[f]=(cur.tally[f]||0)+food[f];cur.body=petBody(cur.tally);cur.hue=petHue(cur.tally);
+    cur.serial=(cur.serial||'')+code;cur.seed=serialHash(cur.serial);
     return `${cur.name} grew into a ${STAGE_NAME[cur.stage]} ${FOOD[cur.body].body}! Its shape and colors change with every snack.`;}
-  const seed=Math.floor(Math.random()*1e6);
-  const p={id:seed,name:PET_SYL[0][seed%PET_SYL[0].length]+PET_SYL[1][Math.floor(seed/7)%PET_SYL[1].length],stage:1,tally:{...food},seed};
+  const seed=serialHash(code+'|'+k.pets.length+'|'+Math.random());
+  const p={id:seed,name:PET_SYL[0][seed%PET_SYL[0].length]+PET_SYL[1][Math.floor(seed/7)%PET_SYL[1].length],stage:1,tally:{...food},serial:code,seed:serialHash(code)};
   p.body=petBody(p.tally);p.hue=petHue(p.tally);k.pets.push(p);
   return `An egg hatched! Meet ${p.name}, a ${FOOD[p.body].body} that is ${FOOD[p.body].desc}.`;}
+function petRng(seed){let a=seed>>>0;return ()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return ((t^t>>>14)>>>0)/4294967296;};}
 function petSVG(p){
-  const h=p.hue,s=p.stage,c=`hsl(${h},75%,64%)`,d=`hsl(${h},60%,36%)`,l=`hsl(${h},95%,88%)`;
+  const h=p.hue,s=p.stage,r=petRng(serialHash(p.serial||String(p.seed))),pick=n=>Math.floor(r()*n);
+  const c=`hsl(${h},75%,64%)`,d=`hsl(${h},60%,36%)`,l=`hsl(${h},95%,88%)`;
+  const bx=50,by=60,rx=(22+s*2)*(0.85+r()*0.3),ry=(18+s*2)*(0.85+r()*0.3);
   let x='';
+  // food-specific extras
   if(p.body==='moonflower')x+=`<path d="M44 52 C18 24 4 46 18 66 Z" fill="${l}" stroke="${d}" stroke-width="2"/><path d="M56 52 C82 24 96 46 82 66 Z" fill="${l}" stroke="${d}" stroke-width="2"/>`;
   if(p.body==='feather')x+=`<path d="M40 76 Q30 100 18 98 Q34 90 40 74 Z" fill="${d}"/><path d="M50 78 Q50 104 46 106 Q44 92 50 78 Z" fill="${l}"/><path d="M60 76 Q70 100 82 98 Q66 90 60 74 Z" fill="${d}"/>`;
   if(p.body==='starberry')x+=`<path d="M30 42 L24 18 L40 30 L50 10 L60 30 L76 18 L70 42 Z" fill="#ffd23a" stroke="#a6830a" stroke-width="2" stroke-linejoin="round"/>`;
-  x+=`<ellipse cx="50" cy="60" rx="${24+s*2}" ry="${20+s*2}" fill="${c}" stroke="${d}" stroke-width="3"/>`;
-  if(p.body==='mushroom'){x+=`<path d="M26 56 Q50 24 74 56 Z" fill="${d}" opacity=".5"/>`;
-    for(let i=0;i<2+p.seed%4;i++)x+=`<circle cx="${34+(i*17)%30}" cy="${42+(i*11)%12}" r="3" fill="#fff"/>`;}
-  x+=`<circle cx="42" cy="60" r="4.5" fill="#1a1028"/><circle cx="58" cy="60" r="4.5" fill="#1a1028"/><circle cx="43.5" cy="58.5" r="1.5" fill="#fff"/><circle cx="59.5" cy="58.5" r="1.5" fill="#fff"/>`;
-  x+=`<path d="M44 70 Q50 75 56 70" stroke="#1a1028" stroke-width="2" fill="none" stroke-linecap="round"/>`;
+  // serial traits: ears, horns, tail, spots, stripes
+  const ears=pick(3);
+  if(ears===1)x+=`<path d="M30 46 L22 22 L44 40 Z" fill="${c}" stroke="${d}" stroke-width="2"/><path d="M70 46 L78 22 L56 40 Z" fill="${c}" stroke="${d}" stroke-width="2"/>`;
+  if(ears===2)x+=`<circle cx="26" cy="48" r="8" fill="${c}" stroke="${d}" stroke-width="2"/><circle cx="74" cy="48" r="8" fill="${c}" stroke="${d}" stroke-width="2"/>`;
+  const horns=pick(3);
+  if(horns>=1)x+=`<path d="M46 40 L44 22 L50 38 Z" fill="${l}" stroke="${d}" stroke-width="1.5"/>`;
+  if(horns===2)x+=`<path d="M54 40 L56 22 L50 38 Z" fill="${l}" stroke="${d}" stroke-width="1.5"/>`;
+  const tail=r()<0.5?1:-1;
+  x+=`<path d="M${bx+rx*0.9} ${by+ry*0.4} Q${bx+rx*1.5} ${by+ry*0.2} ${bx+rx*1.3*tail} ${by-ry*0.6}" stroke="${d}" stroke-width="4" fill="none" stroke-linecap="round"/>`;
+  x+=`<ellipse cx="${bx}" cy="${by}" rx="${rx.toFixed(1)}" ry="${ry.toFixed(1)}" fill="${c}" stroke="${d}" stroke-width="3"/>`;
+  if(p.body==='mushroom'){x+=`<path d="M26 56 Q50 24 74 56 Z" fill="${d}" opacity=".5"/>`;}
+  const spots=2+pick(5);
+  for(let i=0;i<spots;i++)x+=`<circle cx="${(30+r()*40).toFixed(1)}" cy="${(50+r()*16).toFixed(1)}" r="${(1.5+r()*2).toFixed(1)}" fill="${r()<0.5?'#fff':l}" opacity=".85"/>`;
+  // eyes: two, or three when the serial says so
+  const eyes=r()<0.3?3:2;
+  if(eyes===2){x+=`<circle cx="42" cy="60" r="4.5" fill="#1a1028"/><circle cx="58" cy="60" r="4.5" fill="#1a1028"/><circle cx="43.5" cy="58.5" r="1.5" fill="#fff"/><circle cx="59.5" cy="58.5" r="1.5" fill="#fff"/>`;}
+  else{x+=`<circle cx="38" cy="60" r="4" fill="#1a1028"/><circle cx="50" cy="52" r="4" fill="#1a1028"/><circle cx="62" cy="60" r="4" fill="#1a1028"/><circle cx="39.5" cy="58.5" r="1.3" fill="#fff"/><circle cx="51.5" cy="50.5" r="1.3" fill="#fff"/><circle cx="63.5" cy="58.5" r="1.3" fill="#fff"/>`;}
+  const grin=r()<0.5;
+  x+=grin?`<path d="M40 70 Q50 82 60 70" stroke="#1a1028" stroke-width="2" fill="#fff" stroke-linecap="round"/>`:`<path d="M44 70 Q50 75 56 70" stroke="#1a1028" stroke-width="2" fill="none" stroke-linecap="round"/>`;
   if(s>=3)x+=`<path d="M86 14 l3 6 6 3 -6 3 -3 6 -3 -6 -6 -3 6 -3z" fill="#ffd23a"/><path d="M8 40 l2 4 4 2 -4 2 -2 4 -2 -4 -4 -2 4 -2z" fill="#ffd23a"/>`;
   return `<svg class="petsvg" viewBox="0 0 100 110" aria-hidden="true">${x}</svg>`;}
-function petCard(p){return `<div class="pcard">${petSVG(p)}<b>${p.name}</b><small>${STAGE_NAME[p.stage]} ${FOOD[p.body].body}</small><small>${FOOD[p.body].desc}</small></div>`;}
+function petCard(p){return `<div class="pcard">${petSVG(p)}<b>${p.name}</b><small>${STAGE_NAME[p.stage]} ${FOOD[p.body].body}</small><small>${FOOD[p.body].desc}</small><small>Serial ${serialText(serialHash(p.serial||String(p.seed)))}</small></div>`;}
 
 /* ---------- the school party (lobby) ---------- */
 const PARTY={tab:'wardrobe'};
