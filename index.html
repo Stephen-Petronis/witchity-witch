@@ -1247,6 +1247,10 @@ function drawCounter(y){
   ctx.fillStyle='#8a5a30';ctx.fillRect(0,y,W,9);
   ctx.fillStyle='#b07a44';ctx.fillRect(0,y,W,2);
 }
+// the potion shop room picture, cover-fitted behind the customer, counter and cauldron
+const SHOP_BG={img:new Image(),ready:false};SHOP_BG.img.onload=()=>{SHOP_BG.ready=true;};SHOP_BG.img.src='art/potion-shop-bg.png';
+function drawShopBg(){const iw=SHOP_BG.img.width,ih=SHOP_BG.img.height,sc=Math.max(W/iw,H/ih),dw=iw*sc,dh=ih*sc;
+  ctx.drawImage(SHOP_BG.img,(W-dw)/2,H-dh,dw,dh);}
 function renderPotion(){
   // shop wall, shelves of jars, a little window
   let g=ctx.createLinearGradient(0,0,0,H);g.addColorStop(0,'#2a1830');g.addColorStop(1,'#1a0f14');ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
@@ -1256,6 +1260,7 @@ function renderPotion(){
   [0.13,0.3].forEach(sy=>{const y=H*sy;ctx.fillStyle='#5a3620';ctx.fillRect(0,y,W,8);
     for(let x=10;x<W-20;x+=26+rnd()*18){if(rnd()<0.25)continue;const h=14+rnd()*16,w=10+rnd()*8;ctx.globalAlpha=0.55;
       ctx.fillStyle=jarCols[Math.floor(rnd()*jarCols.length)];ctx.fillRect(x,y-h*0.6,w,h*0.6);ctx.fillStyle='rgba(246,239,255,.35)';ctx.fillRect(x,y-h,w,h*0.4);ctx.globalAlpha=1;}});
+  if(SHOP_BG.ready)drawShopBg();
   if(!PZ.rects||!PZ.cur)return;
   // customer: picture fills the shop width and stands on the counter
   const cr=PZ.rects.cust, c=PZ.cur, pr0=PZ.rects.pot, R=Math.min(cr.h*0.28,cr.w*0.17);
