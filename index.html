@@ -1219,7 +1219,9 @@ const CAST=[
   {sick:'art/cast/sick-boy.png',happy:'art/cast/happy-boy.png',par:null},
   {sick:'art/cast/sick-girl.png',happy:'art/cast/happy-girl.png',par:null},
 ];
-const DEFAULT_CARD={l:0.16,r:0.84,t:0.78,b:0.97};
+// a big scroll for customers who don't hold one: it lies on the counter in front of them
+const SCROLL={img:new Image(),ready:false,par:{l:0.121,r:0.889,t:0.254,b:0.852}};
+SCROLL.img.onload=()=>{SCROLL.ready=true;};SCROLL.img.src='art/recipe-scroll.png';
 function pickCast(){let i;do{i=Math.floor(Math.random()*CAST.length);}while(i===PZ.lastCast&&CAST.length>1);PZ.lastCast=i;return i;}
 function placeRecipe(ox,oy,w,h,P){
   const el=$('recipe');if(!el)return;
@@ -1266,7 +1268,15 @@ function renderPotion(){
     const ox=(W-w)/2-slide, oy=counterY-h;
     ctx.save();ctx.beginPath();ctx.rect(0,0,W,counterY);ctx.clip();
     ctx.imageSmoothingEnabled=true;ctx.drawImage(pic,ox,oy,w,h);ctx.restore();
-    if(c.mode==='sick'&&personReady[cast.sick])placeRecipe(ox,oy,w,h,cast.par||DEFAULT_CARD);else{unplaceRecipe();$('recipe').style.visibility=c.mode==='sick'?'':'hidden';}
+    if(c.mode==='sick'&&personReady[cast.sick]){
+      if(cast.par)placeRecipe(ox,oy,w,h,cast.par);
+      else if(SCROLL.ready){
+        // no scroll in the picture: draw one on the counter and put the prescription on it
+        const SW=Math.min(W*0.92,counterY*0.9*720/283), SH=SW*283/720, sx=(W-SW)/2-slide, sy=counterY-SH*0.86;
+        ctx.imageSmoothingEnabled=true;ctx.drawImage(SCROLL.img,sx,sy,SW,SH);
+        placeRecipe(sx,sy,SW,SH,SCROLL.par);
+      }else placeRecipe(ox,oy,w,h,DEFAULT_CARD);
+    }else{unplaceRecipe();$('recipe').style.visibility=c.mode==='sick'?'':'hidden';}
   }else{
     unplaceRecipe();$('recipe').style.visibility=c.mode==='sick'?'':'hidden';
     ctx.save();ctx.translate(cr.x+cr.w/2-slide,cr.y+cr.h*0.42);
